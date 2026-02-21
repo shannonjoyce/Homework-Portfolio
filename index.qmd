@@ -2,8 +2,7 @@
 title: "Reproducible Psychological Research with R: Homework Portfolio"
 author: "Shannon Joyce"
 format:
-  html: {}
-    toc: true
+  html: default
 description: This is a compilation of all homework assignments that I have completed for my graduate class on Reproducible Psychological Research.
 ---
 
