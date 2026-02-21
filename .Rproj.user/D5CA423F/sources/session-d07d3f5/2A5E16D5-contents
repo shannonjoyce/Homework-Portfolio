@@ -1,0 +1,248 @@
+---
+title: "Assignment 4 - NBA Analytics"
+author: "Shannon Joyce"
+---
+
+## Introduction
+
+The NBA season is about to begin, and I have just been hired as a Data Analyst for the National Basketball Association. Commissioner Adam Silver is asking me for insights into last year’s team performances — specifically, how offensive and defensive metrics relate to one another, and whether teams from the Eastern and Western Conferences differ in their overall performance.
+
+Using real-style NBA data from all 30 teams, my job is to build a reproducible analysis in RMarkdown that loads, cleans, visualizes, and analyzes the data to uncover meaningful patterns.
+
+## Step 1: Loading & Preparing the Data
+
+```{r}
+#| label: load-packages4
+#| message: false
+#| warning: false
+
+library(tidyverse)
+library(ggplot2)
+library(Hmisc)
+library(readxl)
+library(skimr)
+library(ggcorrplot)
+library(GGally)
+library(ppcor)
+library(knitr)
+```
+
+```{r}
+#| label: load-and-prep-data
+
+bball_function <- function(x){
+  basketball<- read_xlsx("NBA Team Total Data 2024-2025.xlsx", sheet = x)
+  basketball$Team <- x
+  basketball$Won_award<- ifelse(is.na(basketball$Awards),"No","Yes")
+  basketball$PRA<- basketball$PTS + basketball$TRB + basketball$AST
+  basketball$STOCKS<- basketball$STL+ basketball$BLK
+  return(basketball)
+}
+
+team_names<- excel_sheets("NBA Team Total Data 2024-2025.xlsx")
+
+all_data<- lapply(team_names, bball_function) %>% bind_rows()
+```
+
+```{r}
+#| label: tbl-nba-team-data
+#| tbl-cap: "NBA Team Data 2024-2025, first 5 rows."
+
+all_data %>% head(n=5) %>% kable()
+```
+
+In this chunk, I created a function (bball_function) that loaded data from all 30 teams (one from each sheet) from the NBA 2024-2025 dataset, created a variable showing if the player received an award (0=No, 1=Yes), and created 2 more variables of the players' PRA (points, rebounds & assists) and their STOCKS (steals & blocks). Phew!
+
+::: {.callout-important}
+## Uploading Multiple Datasets
+
+Here is where I created a function and used lapply() to upload multiple sheets of data at once and create datasets from them in RStudio.
+:::
+
+In order to actually load those 30 sheets, I created an object called 'team_names' that read each sheet individually, and used lapply() to assign the team_names object to the bball_function. Finally, I binded all the rows together to make one large dataset of all 30 teams called 'all_data'.
+
+## Step 2: Adding Conference Information
+
+```{r}
+#| label: conference
+
+conference_data<- read_xlsx("Team Conferences.xlsx")
+
+all_data<- merge(all_data, conference_data, by="Team")
+
+all_data<- all_data %>%
+  mutate(Conference = dplyr::recode(Conference, "East" = 1, "West" = 0))
+```
+
+```{r}
+#| label: tbl-nba-conference-info
+#| tbl-cap: "Updated NBA Team Data 2024-2025, first 5 rows."
+
+all_data %>% head(n=5) %>% kable()
+```
+
+I mean, it's basically in the name. This chunk shows how I added a variable for the conference that each team belongs to (East or West) by uploading a dataset of teams and their conference and merging it with my all_data by the column named 'Team'. And then, of course, making it a binary variable.
+
+## Step 3: Visual Exploration
+
+### Plot 1: PRA vs. STOCKS
+
+```{r}
+#| label: creating-fig-1
+
+p1<- ggplot(all_data, aes(x = PRA, y = STOCKS)) +
+  geom_point(aes(color = factor(Conference)), size = 3, alpha = 0.8) +
+  geom_smooth(method = "lm", se = FALSE, color = "darkgreen") +
+  theme_minimal() +
+  labs(color = "Conference",
+    title = "PRA vs STOCKS",
+    subtitle = "Are players' PRA and STOCKS related?",
+    x = "PRA", y = "STOCKS",) +
+  scale_color_manual(
+    name = "Conference",
+    values = c("0" = "orange", "1" = "skyblue3"),
+    labels = c("0" = "West", "1" = "East")
+  )
+```
+
+```{r}
+#| label: fig-1
+#| message: false
+#| warning: false
+#| fig-cap: "A scatterplot showing each players' points, rebounds, and the relationship with their steals and blocks. Players in the West Coast conference are represented by an orange dot and players in the East Coast conference are represented by a blue dot."
+
+p1
+```
+
+Let's take a look at the relationship between a player's PRA and their STOCKS. What we see is that PRA and STOCKS are very closely related; as PRA goes up, so does STOCKS. However, this may be due to other factors, such as minutes played (i.e., the more time a player gets on the court, the more PRA and STOCKS they are likely to accumulate). These metrics seem to be pretty uniform for both conferences- one conference does not perform better than another.
+
+### Plot 2: Minutes Played vs. Age (by Conference)
+
+```{r}
+#| label: creating-fig-2
+#| warning: false
+
+p2<- ggplot(all_data, aes(x = Age, y = MP, color = Conference)) +
+  geom_point(aes(color = factor(Conference)), size = 3, alpha = 0.8) +
+  geom_smooth(method = "lm", se = FALSE) +
+  theme_minimal() +
+  labs(title = "Minutes Played vs. Age by Conference",
+       x = "Age",
+       y = "Minutes Played") +
+  scale_color_manual(
+    name = "Conference",
+    values = c("0" = "orange", "1" = "skyblue3"),
+    labels = c("0" = "West", "1" = "East")
+  )
+```
+
+```{r}
+#| label: fig-2
+#| message: false
+#| warning: false
+#| fig-cap: "A scatterplot representing each players' amount of minutes played over the season compared with their age. Players in the West Coast conference are represented by an orange dot and players in the East Coast conference are represented by a blue dot."
+
+p2
+```
+
+For my second visualization, I chose to look at Minutes Played vs. Age (and grouped them by conference just to see what lies between groups). Here's what we see: The older a player is, the more minutes they get to play, but there is a lot of variation in minutes played within the same ages. It also seems as though the older players in the West coast conference get more playing time than the older players in the East coast conference on average.
+
+## Step 4: Correlation Analyses
+
+### Is Conference related to PRA?
+
+```{r}
+#| label: conference-pra-correlation
+
+cor.test(all_data$Conference, all_data$PRA)
+```
+
+-   Strength: very weak (-0.07)
+
+-   Direction: negative
+
+-   Significance: not significant (p\>0.05)
+
+This correlation shows us that there may be a slight negative trend in conference predicting PRA, but the effect is so small and statistically insignificant that it virtually means nothing. There is no linear relationship between Conference and PRA.
+
+### Is Conference related to STOCKS?
+
+```{r}
+#| label: conference-stocks-correlation
+
+cor.test(all_data$Conference, all_data$STOCKS)
+```
+
+-   Strength: very weak (-0.08)
+
+-   Direction: negative
+
+-   Significance: significant (p\<0.05)
+
+This means that there is a very small but statistically significant negative correlation between Conference and STOCKS, suggesting a specific Conference may negatively predict STOCKS. However, the effect is so small that it is most likely not practically meaningful.
+
+### Correlation Matrix: Age, PRA, STOCKS, & Awards Won
+
+```{r}
+#| label: correlation-matrix-4
+#| output: false
+
+all_data <- all_data %>%
+  mutate(Won_award_N = case_when(
+    Won_award == "No" ~ 0,
+    Won_award == "Yes" ~ 1)
+  )
+rcorr(as.matrix(all_data[, c("PRA", "STOCKS", "Age", "Won_award_N")]))
+
+colnames(all_data)
+all_data_num<- all_data %>% dplyr::select(4,33,34,37)
+
+corr_matrix <- cor(all_data_num, use = "pairwise.complete.obs")
+```
+
+Before creating the matrix, I had to create a binary variable for Won_award, which I have created as Won_award_N, where 0 = 'No' and 1 = 'Yes'.
+
+```{r}
+#| label: tbl-corr-matrix
+#| tbl-cap: "Table representing the correlations between PRA, STOCKS, Age, and Awards Won."
+#| tbl-cap-location: bottom
+
+corr_matrix %>% kable()
+```
+
+Let's visualize it:
+
+```{r}
+#| label: fig-matrix-visualization
+#| warning: false
+#| fig-cap: "A correlation matrix exploring the relationships between PRAs (points, rebounds, and assists), STOCKS (steals and blocks), and number of awards won."
+
+ggcorrplot(corr_matrix, lab = TRUE, type = "lower") +
+    labs(title = "Correlation Matrix: PRA, STOCKS, Age, Won_award_N")
+```
+
+Consistent with the correlations previously run, PRA and STOCKS have the strongest relationship. As mentioned before, this is likely due to the fact that those who have a higher PRA likely have more playing time- which would make them more likely to have a higher number of STOCKS as well. After that, the next strongest relationships are that of Won_award_N with PRAs and with STOCKS. This makes sense, because I would assume that the players who have won an award have performed better either offensively or defensively than those who have not won any awards.
+
+### Partial Correlation
+
+#### PRA vs. STOCKS, Controlling for Minutes Played
+
+```{r}
+#| label: tbl-partial-correlation
+#| tbl-cap: "A table summarizing results of a partial correlation test between PRA and STOCKS, controlling for Minutes Played."
+#| tbl-cap-location: bottom
+
+pcor.test(all_data$PRA, all_data$STOCKS, all_data$MP) %>% kable()
+```
+
+PRA and STOCKS are closely related, but not when we control for Minutes Played. This just about confirmed my suspicions; PRA and STOCKS are both likely to be higher when a player has more time on the court- not necessarily because being good at one means being good at the other. So, PRA and STOCKS are not directly related to one another.
+
+## Step 5: Communicating my Findings
+
+Dear Adam Silver,
+
+Thank you for choosing me to run analytics on all of your teams' performances! Unfortunately, we did not find anything too groundbreaking, but hopefully it provides you with some new insights you may not have had before. First, we looked at the relationship between PRA and STOCKS, and we determined that there is a positive linear relationship between the two variables. Upon further probing (partial correlation), we found that this relationship disappears when we control for Minutes Played, suggesting that having a higher PRA does not make you a better defensive player, but rather, more minutes on the court make you more likely to have accumulated higher PRA and STOCKS. Additionally, there seemed to be no difference in PRA and STOCKS between conferences. I then took a look at how Minutes Played varied by Age, and we saw that the older a player is, the more minutes they get to play on average. Overall, this finding was pretty consistent across conferences, but I noticed that the older players in the West coast conference tended to get more playing time than the older players in the East coast conference. Finally, we ran some correlations with the player's performances, which revealed that there is no practical differences between conferences when it comes to PRA or STOCKS. You might be able to make the case for Conference negatively predicting STOCKS, but the relationship is so weak that it does not really mean much in the real world. Our final takeaway is that there was a strong positive correlation between performance and awards: those who performed better throughout the season (higher PRA and STOCKS) were much more likely to have received an award at the end of the season. So, were there differences between East coast and West coast conferences? Not particularly. At least, nothing to write home about. And as far as PRA and STOCKS moving together, they only do so when confounding variables are involved. A limitation from my analysis is that I only ran correlations for the most part; it would be interesting to see how teams within the same conferences varied. Anyway, I hope you choose me again (for some reason) to run analyses for your team performances next year, even though I know nothing about basketball!
+
+Sincerely,
+
+Shannon Joyce

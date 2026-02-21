@@ -1,0 +1,1300 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.27">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Shannon Joyce">
+
+<title>Assignment 5 - Florida Crime Analytics</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="05-florida-crime-analytics_files/libs/clipboard/clipboard.min.js"></script>
+<script src="05-florida-crime-analytics_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="05-florida-crime-analytics_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="05-florida-crime-analytics_files/libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="05-florida-crime-analytics_files/libs/quarto-html/popper.min.js"></script>
+<script src="05-florida-crime-analytics_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="05-florida-crime-analytics_files/libs/quarto-html/anchor.min.js"></script>
+<link href="05-florida-crime-analytics_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="05-florida-crime-analytics_files/libs/quarto-html/quarto-syntax-highlighting-ed96de9b727972fe78a7b5d16c58bf87.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="05-florida-crime-analytics_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="05-florida-crime-analytics_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="05-florida-crime-analytics_files/libs/bootstrap/bootstrap-d6a003b94517c951b2d65075d42fb01b.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="05-florida-crime-analytics_files/libs/htmltools-fill-0.5.8.1/fill.css" rel="stylesheet">
+<script src="05-florida-crime-analytics_files/libs/htmlwidgets-1.6.4/htmlwidgets.js"></script>
+<script src="05-florida-crime-analytics_files/libs/plotly-binding-4.11.0/plotly.js"></script>
+<script src="05-florida-crime-analytics_files/libs/typedarray-0.1/typedarray.min.js"></script>
+<script src="05-florida-crime-analytics_files/libs/jquery-3.5.1/jquery.min.js"></script>
+<link href="05-florida-crime-analytics_files/libs/crosstalk-1.2.2/css/crosstalk.min.css" rel="stylesheet">
+<script src="05-florida-crime-analytics_files/libs/crosstalk-1.2.2/js/crosstalk.min.js"></script>
+<link href="05-florida-crime-analytics_files/libs/plotly-htmlwidgets-css-2.11.1/plotly-htmlwidgets.css" rel="stylesheet">
+<script src="05-florida-crime-analytics_files/libs/plotly-main-2.11.1/plotly-latest.min.js"></script>
+
+
+</head>
+
+<body class="fullcontent quarto-light">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Assignment 5 - Florida Crime Analytics</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Shannon Joyce </p>
+          </div>
+  </div>
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<p>I have been hired by the Florida Police Department (FPD) as their new Data Analyst. I have been tasked with a mission to uncover what socioeconomic factors are most strongly associated with rising crime rates across Florida counties. The FPD is particularly interested in whether income, education, or urbanization play the largest role in explaining differences in crime rates. My analysis will help inform statewide prevention strategies, resource allocation, and community outreach efforts.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readxl)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggthemes)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(skimr)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(mosaic)</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(plotly)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(maps)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggcorrplot)</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(GGally)</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(knitr)</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ppcor)</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(AICcmodavg)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section>
+<section id="step-1-loading-and-preparing-the-data" class="level2">
+<h2 class="anchored" data-anchor-id="step-1-loading-and-preparing-the-data">Step 1 – Loading and Preparing the Data</h2>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>florida_crime<span class="ot">&lt;-</span> <span class="fu">read_xlsx</span>(<span class="st">"Florida County Crime Rates.xlsx"</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>florida_crime<span class="ot">&lt;-</span> florida_crime <span class="sc">%&gt;%</span> </span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Crime"</span> <span class="ot">=</span> <span class="st">"C"</span>,</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Income"</span> <span class="ot">=</span> <span class="st">"I"</span>,</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">"HighSchoolGrad"</span> <span class="ot">=</span> <span class="st">"HS"</span>,</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    <span class="st">"UrbanPop"</span> <span class="ot">=</span> <span class="st">"U"</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>florida_crime <span class="ot">&lt;-</span> florida_crime <span class="sc">%&gt;%</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">County =</span> <span class="fu">str_to_title</span>(County)</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>    )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">skim</span>(florida_crime) <span class="sc">%&gt;%</span> <span class="fu">kable</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="tbl-florida-crime" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-florida-crime-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;1: Florida Crime Data Summary.
+</figcaption>
+<div aria-describedby="tbl-florida-crime-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<table class="do-not-create-environment cell caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 4%">
+<col style="width: 6%">
+<col style="width: 4%">
+<col style="width: 6%">
+<col style="width: 6%">
+<col style="width: 6%">
+<col style="width: 6%">
+<col style="width: 8%">
+<col style="width: 9%">
+<col style="width: 5%">
+<col style="width: 4%">
+<col style="width: 4%">
+<col style="width: 5%">
+<col style="width: 5%">
+<col style="width: 5%">
+<col style="width: 5%">
+<col style="width: 5%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">skim_type</th>
+<th style="text-align: left;">skim_variable</th>
+<th style="text-align: right;">n_missing</th>
+<th style="text-align: right;">complete_rate</th>
+<th style="text-align: right;">character.min</th>
+<th style="text-align: right;">character.max</th>
+<th style="text-align: right;">character.empty</th>
+<th style="text-align: right;">character.n_unique</th>
+<th style="text-align: right;">character.whitespace</th>
+<th style="text-align: right;">numeric.mean</th>
+<th style="text-align: right;">numeric.sd</th>
+<th style="text-align: right;">numeric.p0</th>
+<th style="text-align: right;">numeric.p25</th>
+<th style="text-align: right;">numeric.p50</th>
+<th style="text-align: right;">numeric.p75</th>
+<th style="text-align: right;">numeric.p100</th>
+<th style="text-align: left;">numeric.hist</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">character</td>
+<td style="text-align: left;">County</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">9</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">67</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: left;">NA</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">numeric</td>
+<td style="text-align: left;">Crime</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">52.40299</td>
+<td style="text-align: right;">28.193627</td>
+<td style="text-align: right;">0.0</td>
+<td style="text-align: right;">35.50</td>
+<td style="text-align: right;">52.0</td>
+<td style="text-align: right;">69.00</td>
+<td style="text-align: right;">128.0</td>
+<td style="text-align: left;">▃▇▇▃▂</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">numeric</td>
+<td style="text-align: left;">Income</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">24.51045</td>
+<td style="text-align: right;">4.682758</td>
+<td style="text-align: right;">15.4</td>
+<td style="text-align: right;">21.05</td>
+<td style="text-align: right;">24.6</td>
+<td style="text-align: right;">28.15</td>
+<td style="text-align: right;">35.6</td>
+<td style="text-align: left;">▂▇▅▅▂</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">numeric</td>
+<td style="text-align: left;">HighSchoolGrad</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">69.48955</td>
+<td style="text-align: right;">8.858776</td>
+<td style="text-align: right;">54.5</td>
+<td style="text-align: right;">62.45</td>
+<td style="text-align: right;">69.0</td>
+<td style="text-align: right;">76.90</td>
+<td style="text-align: right;">84.9</td>
+<td style="text-align: left;">▇▇▆▇▆</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">numeric</td>
+<td style="text-align: left;">UrbanPop</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">49.55821</td>
+<td style="text-align: right;">33.969011</td>
+<td style="text-align: right;">0.0</td>
+<td style="text-align: right;">21.60</td>
+<td style="text-align: right;">44.6</td>
+<td style="text-align: right;">83.55</td>
+<td style="text-align: right;">99.6</td>
+<td style="text-align: left;">▅▆▂▃▇</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+<p>What we did here:</p>
+<p>1) loaded the data</p>
+<p>2) made the columns ‘C’, ‘I’, “HS’, and ‘U’ readable</p>
+<p>3) standardized the ‘County’ rows to have only the first letter capitalized instead of the entire name</p>
+<p>4) ran a quick summary on the data</p>
+</section>
+<section id="step-2-exploratory-data-analysis" class="level2">
+<h2 class="anchored" data-anchor-id="step-2-exploratory-data-analysis">Step 2 – Exploratory Data Analysis</h2>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(florida_crime) <span class="sc">%&gt;%</span> <span class="fu">kable</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="tbl-descriptive-statistics-5" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-descriptive-statistics-5-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;2: Table showing preliminary descriptive statistics such as averages to better understand the dataset and what patterns to explore regarding county, crime, income, high school graduation rate, and urban population rate.
+</figcaption>
+<div aria-describedby="tbl-descriptive-statistics-5-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<table class="do-not-create-environment cell caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 3%">
+<col style="width: 22%">
+<col style="width: 18%">
+<col style="width: 18%">
+<col style="width: 19%">
+<col style="width: 18%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;"></th>
+<th style="text-align: left;">County</th>
+<th style="text-align: left;">Crime</th>
+<th style="text-align: left;">Income</th>
+<th style="text-align: left;">HighSchoolGrad</th>
+<th style="text-align: left;">UrbanPop</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">Length:67</td>
+<td style="text-align: left;">Min. : 0.0</td>
+<td style="text-align: left;">Min. :15.40</td>
+<td style="text-align: left;">Min. :54.50</td>
+<td style="text-align: left;">Min. : 0.00</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">Class :character</td>
+<td style="text-align: left;">1st Qu.: 35.5</td>
+<td style="text-align: left;">1st Qu.:21.05</td>
+<td style="text-align: left;">1st Qu.:62.45</td>
+<td style="text-align: left;">1st Qu.:21.60</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">Mode :character</td>
+<td style="text-align: left;">Median : 52.0</td>
+<td style="text-align: left;">Median :24.60</td>
+<td style="text-align: left;">Median :69.00</td>
+<td style="text-align: left;">Median :44.60</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">Mean : 52.4</td>
+<td style="text-align: left;">Mean :24.51</td>
+<td style="text-align: left;">Mean :69.49</td>
+<td style="text-align: left;">Mean :49.56</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">3rd Qu.: 69.0</td>
+<td style="text-align: left;">3rd Qu.:28.15</td>
+<td style="text-align: left;">3rd Qu.:76.90</td>
+<td style="text-align: left;">3rd Qu.:83.55</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: left;">Max. :128.0</td>
+<td style="text-align: left;">Max. :35.60</td>
+<td style="text-align: left;">Max. :84.90</td>
+<td style="text-align: left;">Max. :99.60</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+<section id="plot-1-crime-rate-by-income-in-florida-counties" class="level3">
+<h3 class="anchored" data-anchor-id="plot-1-crime-rate-by-income-in-florida-counties">Plot 1: Crime Rate by Income in Florida Counties</h3>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>p1<span class="ot">&lt;-</span> <span class="fu">ggplot</span>(florida_crime, <span class="fu">aes</span>(<span class="at">x =</span> Income, <span class="at">y =</span> Crime)) <span class="sc">+</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">"lm"</span>) <span class="sc">+</span> </span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Crime Rate by Income in Florida Counties"</span>,,</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Median Income (in thousands)"</span>, <span class="at">y =</span> <span class="st">"Crime (per 1,000 residents)"</span>) <span class="sc">+</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>) <span class="sc">+</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_economist</span>() <span class="sc">+</span> </span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_colour_economist</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>p1</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div id="fig-plot-1-5" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-plot-1-5-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="05-florida-crime-analytics_files/figure-html/fig-plot-1-5-1.png" class="img-fluid figure-img" width="672">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-plot-1-5-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: A scatterplot representing the variation in crime rate by the median household income in Florida counties.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>Our first plot shows us that crime happens more often in counties with higher median income. This was a bit unexpected!</p>
+</section>
+<section id="plot-2-crime-rate-by-urban-population-percentage-in-florida-counties" class="level3">
+<h3 class="anchored" data-anchor-id="plot-2-crime-rate-by-urban-population-percentage-in-florida-counties">Plot 2: Crime Rate by Urban Population Percentage in Florida Counties</h3>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>florida_crime_group <span class="ot">&lt;-</span> florida_crime <span class="sc">%&gt;%</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">UrbanBin=</span> <span class="fu">case_when</span>(</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    UrbanPop <span class="sc">&lt;=</span> <span class="dv">30</span> <span class="sc">~</span> <span class="st">"Low"</span>,</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    UrbanPop <span class="sc">&gt;</span> <span class="dv">30</span> <span class="sc">&amp;</span> UrbanPop <span class="sc">&lt;=</span> <span class="dv">60</span> <span class="sc">~</span> <span class="st">"Medium"</span>,</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>    UrbanPop <span class="sc">&gt;</span> <span class="dv">60</span> <span class="sc">&amp;</span> UrbanPop <span class="sc">&lt;=</span> <span class="dv">90</span> <span class="sc">~</span> <span class="st">"High"</span>,</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>    UrbanPop <span class="sc">&gt;</span> <span class="dv">90</span> <span class="sc">~</span> <span class="st">"Very High"</span>))</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>florida_crime_group<span class="sc">$</span>UrbanBin<span class="ot">&lt;-</span> <span class="fu">factor</span>(florida_crime_group<span class="sc">$</span>UrbanBin,</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>                         <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"Low"</span>, <span class="st">"Medium"</span>, <span class="st">"High"</span>, <span class="st">"Very High"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(florida_crime_group, <span class="fu">aes</span>(<span class="at">x =</span> UrbanBin, <span class="at">y =</span> Crime)) <span class="sc">+</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_boxplot</span>() <span class="sc">+</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Crime by Urban Population in Florida Counties"</span>,</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Urban Population (%)"</span>, <span class="at">y =</span> <span class="st">"Crime (per 1,000 residents)"</span>) <span class="sc">+</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>   <span class="fu">theme_economist</span>() <span class="sc">+</span> </span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_colour_economist</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div id="fig-plot-2-5" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-plot-2-5-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="05-florida-crime-analytics_files/figure-html/fig-plot-2-5-1.png" class="img-fluid figure-img" width="672">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-plot-2-5-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;2: A boxplot representing the variation in crime rate by the percentage of urban population in Florida counties.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>When urban population percentage is grouped into bins, we can see that more crime occurs in counties with a greater urban population.</p>
+</section>
+<section id="heat-map-crime-in-florida-counties" class="level3">
+<h3 class="anchored" data-anchor-id="heat-map-crime-in-florida-counties">Heat Map: Crime in Florida Counties</h3>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>florida_map<span class="ot">&lt;-</span> <span class="fu">map_data</span>(<span class="st">"county"</span>, <span class="st">"florida"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">County =</span> subregion)</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>crime_map<span class="ot">&lt;-</span> florida_crime <span class="sc">%&gt;%</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">County =</span> <span class="fu">tolower</span>(County))</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>crime_map <span class="ot">&lt;-</span> <span class="fu">left_join</span>(crime_map,florida_map, <span class="at">by=</span><span class="st">"County"</span>)</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>crime_map<span class="ot">&lt;-</span> crime_map <span class="sc">%&gt;%</span> dplyr<span class="sc">::</span><span class="fu">select</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>,<span class="dv">6</span><span class="sc">:</span><span class="dv">8</span>)</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>p3<span class="ot">&lt;-</span> <span class="fu">ggplot</span>(<span class="at">data =</span> crime_map, <span class="fu">aes</span>(<span class="at">x =</span> long, <span class="at">y =</span> lat, <span class="at">group =</span> group, <span class="at">fill =</span> Crime)) <span class="sc">+</span></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_polygon</span>(<span class="at">color =</span> <span class="st">"white"</span>, <span class="at">linewidth =</span> <span class="fl">0.2</span>) <span class="sc">+</span> </span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_fixed</span>(<span class="fl">1.3</span>) <span class="sc">+</span></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_viridis_c</span>(<span class="at">option =</span> <span class="st">"magma"</span>, <span class="at">name =</span> <span class="st">"Crimes per 1,000 residents"</span>) <span class="sc">+</span> </span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Florida County Crime Rates"</span>,</span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>    ) <span class="sc">+</span></span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_void</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplotly</span>(p3)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="fig-heat-map" class="cell-output-display quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-heat-map-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="plotly html-widget html-fill-item" id="htmlwidget-1d38a543e988d4b19817" style="width:100%;height:464px;"></div>
+<script type="application/json" data-for="htmlwidget-1d38a543e988d4b19817">{"x":{"data":[{"x":[-83.37109375,-83.239311218261719,-83.239311218261719,-83.23358154296875,-83.23358154296875,-83.239311218261719,-83.210655212402344,-83.210655212402344,-83.199203491210938,-83.182014465332031,-83.124710083007812,-83.067420959472656,-82.998672485351562,-82.964286804199219,-82.941368103027344,-82.918449401855469,-82.912727355957031,-82.912727355957031,-82.906997680664062,-82.87261962890625,-82.866889953613281,-82.884071350097656,-82.895530700683594,-82.912727355957031,-82.935638427734375,-83.313796997070312,-83.365364074707031,-83.365364074707031,-83.376815795898438,-83.37109375,-83.37109375],"y":[30.257902145385742,30.257902145385742,30.246440887451172,30.223522186279297,30.194875717163086,30.171957015991211,30.137580871582031,30.108932495117188,30.097475051879883,30.097475051879883,30.097475051879883,30.074556350708008,30.022987365722656,29.977149963378906,29.959962844848633,29.948505401611328,29.919855117797852,29.908397674560547,29.891208648681641,29.874017715454102,29.868289947509766,29.839641571044922,29.822452545166016,29.822452545166016,29.816722869873047,29.822452545166016,29.822452545166016,29.908397674560547,29.908397674560547,30.257902145385742,30.257902145385742],"text":"Crime:   0","type":"scatter","mode":"lines","line":{"width":0.75590551181102372,"color":"rgba(255,255,255,1)","dash":"solid"},"fill":"toself","fillcolor":"rgba(0,0,4,1)","hoveron":"fills","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[-85.869186401367188,-86.046798706054688,-86.046798706054688,-85.519676208496094,-85.559783935546875,-85.565513610839844,-85.582710266113281,-85.611351013183594,-85.622817993164062,-85.605621337890625,-85.639999389648438,-85.743133544921875,-85.748863220214844,-85.760322570800781,-85.771781921386719,-85.846267700195312,-85.851997375488281,-85.851997375488281,-85.863456726074219,-85.869186401367188,-85.869186401367188],"y":[30.721996307373047,30.727725982666016,31.008474349975586,31.008474349975586,30.956911087036133,30.933992385864258,30.922531127929688,30.865236282348633,30.848047256469727,30.848047256469727,30.762104034423828,30.762104034423828,30.790752410888672,30.796482086181641,30.807941436767578,30.802209854125977,30.790752410888672,30.767833709716797,30.744915008544922,30.721996307373047,30.721996307373047],"text":"Crime:   5","type":"scatter","mode":"lines","line":{"width":0.75590551181102372,"color":"rgba(255,255,255,1)","dash":"solid"},"fill":"toself","fillcolor":"rgba(20,7,28,1)","hoveron":"fills","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[-83.124710083007812,-82.706459045410156,-82.723648071289062,-82.706459045410156,-82.637702941894531,-82.637702941894531,-82.672073364257812,-82.706459045410156,-82.735107421875,-82.758018493652344,-82.792404174804688,-82.87261962890625,-82.889801025390625,-82.901260375976562,-82.918449401855469,-82.929908752441406,-82.929908752441406,-82.964286804199219,-83.010124206542969,-83.044502258300781,-83.067420959472656,-83.0960693359375,-83.124710083007812,-83.159095764160156,-83.193473815917969,-83.210655212402344,-83.216384887695312,-83.222122192382812,-83.222122192382812,-83.239311218261719,-83.245040893554688,-83.285148620605469,-83.124710083007812,-83.124710083007812,null,-82.425704956054688,-82.523109436035156,-82.540298461914062,-82.568946838378906,-82.563217163085938,-82.5517578125,-82.540298461914062,-82.523109436035156,-82.511650085449219,-82.471542358398438,-82.454360961914062,-82.460090637207031,-82.133499145507812,-82.139228820800781,-82.162147521972656,-82.173606872558594,-82.196525573730469,-82.271011352539062,-82.288200378417969,-82.305381774902344,-82.322578430175781,-82.351219177246094,-82.385597229003906,-82.425704956054688,-82.425704956054688],"y":[30.618864059448242,30.590217590332031,30.538650512695312,30.498542785644531,30.412599563598633,30.378223419189453,30.343845367431641,30.320926666259766,30.303739547729492,30.303739547729492,30.309467315673828,30.361034393310547,30.378223419189453,30.383953094482422,30.383953094482422,30.383953094482422,30.395410537719727,30.412599563598633,30.424060821533203,30.424060821533203,30.429786682128906,30.429786682128906,30.418329238891602,30.389680862426758,30.418329238891602,30.441247940063477,30.469894409179688,30.487085342407227,30.510004043579102,30.561569213867188,30.590217590332031,30.630325317382812,30.618864059448242,30.618864059448242,null,29.914125442504883,29.937044143676758,29.959962844848633,29.982881546020508,30.005800247192383,30.017257690429688,30.045906066894531,30.068824768066406,30.074556350708008,30.086013793945312,30.114662170410156,30.137580871582031,30.137580871582031,30.103200912475586,30.091743469238281,30.080282211303711,30.051637649536133,30.005800247192383,29.988611221313477,29.959962844848633,29.954235076904297,29.948505401611328,29.937044143676758,29.914125442504883,29.914125442504883],"text":"Crime:   6","type":"scatter","mode":"lines","line":{"width":0.75590551181102372,"color":"rgba(255,255,255,1)","dash":"solid"},"fill":"toself","fillcolor":"rgba(22,9,32,1)","hoveron":"fills","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[-85.40509033203125,-85.399360656738281,-85.193092346191406,-85.181640625,-84.935256958007812,-84.946723937988281,-84.986831665039062,-85.004020690917969,-85.015480041503906,-85.009750366210938,-85.026931762695312,-85.055587768554688,-85.055587768554688,-85.04412841796875,-85.032669067382812,-85.04412841796875,-85.061309814453125,-85.061309814453125,-85.084236145019531,-85.0899658203125,-85.130073547363281,-85.40509033203125,-85.40509033203125,null,-84.935256958007812,-84.935256958007812,-84.900886535644531,-84.895156860351562,-84.832130432128906,-84.832130432128906,-84.797752380371094,-84.792022705078125,-84.723274230957031,-84.717544555664062,-84.688888549804688,-84.688888549804688,-84.660240173339844,-84.671707153320312,-84.694618225097656,-84.711807250976562,-84.717544555664062,-84.723274230957031,-84.717544555664062,-84.688888549804688,-84.660240173339844,-84.643058776855469,-84.597221374511719,-84.580032348632812,-84.837860107421875,-85.021202087402344,-85.026931762695312,-85.04412841796875,-85.067039489746094,-85.0899658203125,-85.130073547363281,-85.152984619140625,-85.164443969726562,-85.158714294433594,-85.152984619140625,-85.130073547363281,-85.0899658203125,-85.084236145019531,-85.061309814453125,-85.061309814453125,-85.04412841796875,-85.032669067382812,-85.04412841796875,-85.055587768554688,-85.055587768554688,-85.026931762695312,-85.009750366210938,-85.015480041503906,-85.004020690917969,-84.986831665039062,-84.946723937988281,-84.935256958007812,-84.935256958007812],"y":[30.217794418334961,30.573026657104492,30.573026657104492,30.607406616210938,30.607406616210938,30.595945358276367,30.573026657104492,30.527193069458008,30.475624084472656,30.458436965942383,30.441247940063477,30.424060821533203,30.401142120361328,30.401142120361328,30.401142120361328,30.383953094482422,30.372491836547852,30.315196990966797,30.286548614501953,30.252170562744141,30.212064743041992,30.217794418334961,30.217794418334961,null,30.607406616210938,30.607406616210938,30.607406616210938,30.538650512695312,30.532918930053711,30.515731811523438,30.515731811523438,30.469894409179688,30.458436965942383,30.424060821533203,30.418329238891602,30.395410537719727,30.395410537719727,30.372491836547852,30.355304718017578,30.326654434204102,30.303739547729492,30.286548614501953,30.257902145385742,30.189146041870117,30.114662170410156,30.080282211303711,30.051637649536133,30.017257690429688,30.022987365722656,30.022987365722656,29.994342803955078,29.977149963378906,30.005800247192383,30.017257690429688,30.051637649536133,30.080282211303711,30.097475051879883,30.126119613647461,30.171957015991211,30.212064743041992,30.252170562744141,30.286548614501953,30.315196990966797,30.372491836547852,30.383953094482422,30.401142120361328,30.401142120361328,30.401142120361328,30.424060821533203,30.441247940063477,30.458436965942383,30.475624084472656,30.527193069458008,30.573026657104492,30.595945358276367,30.607406616210938,30.607406616210938],"text":"Crime:   8","type":"scatter","mode":"lines","line":{"width":0.75590551181102372,"color":"rgba(255,255,255,1)","dash":"solid"},"fill":"toself","fillcolor":"rgba(26,12,39,1)","hoveron":"fills","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[-82.660621643066406,-82.666351318359375,-82.752296447753906,-82.758018493652344,-82.855422973632812,-82.861160278320312,-82.935638427734375,-82.964286804199219,-82.958564758300781,-82.947097778320312,-82.947097778320312,-82.947097778320312,-82.935638427734375,-82.935638427734375,-82.912727355957031,-82.895530700683594,-82.884071350097656,-82.866889953613281,-82.87261962890625,-82.855422973632812,-82.843963623046875,-82.821052551269531,-82.815322875976562,-82.798126220703125,-82.786674499511719,-82.752296447753906,-82.752296447753906,-82.717910766601562,-82.68927001953125,-82.660621643066406,-82.660621643066406],"y":[29.816722869873047,29.570350646972656,29.570350646972656,29.581811904907227,29.581811904907227,29.593269348144531,29.593269348144531,29.593269348144531,29.644838333129883,29.679214477539062,29.707859039306641,29.736509323120117,29.776615142822266,29.816722869873047,29.822452545166016,29.822452545166016,29.839641571044922,29.868289947509766,29.874017715454102,29.896936416625977,29.902667999267578,29.908397674560547,29.919855117797852,29.931316375732422,29.925586700439453,29.879749298095703,29.862560272216797,29.839641571044922,29.822452545166016,29.816722869873047,29.816722869873047],"text":"Crime:  15","type":"scatter","mode":"lines","line":{"width":0.75590551181102372,"color":"rgba(255,255,255,1)","dash":"solid"},"fill":"toself","fillcolor":"rgba(39,15,67,1)","hoveron":"fills","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[-86.046798706054688,-86.046798706054688,-85.869186401367188,-85.892105102539062,-85.892105102539062,-85.903564453125,-85.920753479003906,-85.932205200195312,-85.926475524902344,-85.903564453125,-85.903564453125,-85.903564453125,-85.897834777832031,-85.886367797851562,-85.892105102539062,-85.909294128417969,-85.915023803710938,-85.943672180175781,-85.978042602539062,-85.989509582519531,-86.018150329589844,-85.989509582519531,-85.989509582519531,-86.035346984863281,-86.155662536621094,-86.2645263671875,-86.339004516601562,-86.40203857421875,-86.40203857421875,-86.373390197753906,-86.350471496582031,-86.333282470703125,-86.321823120117188,-86.304634094238281,-86.287445068359375,-86.247337341308594,-86.207229614257812,-86.167129516601562,-86.144203186035156,-86.138473510742188,-86.138473510742188,-86.161392211914062,-86.195770263671875,-86.235877990722656,-86.247337341308594,-86.258796691894531,-86.287445068359375,-86.298896789550781,-86.333282470703125,-86.361930847167969,-86.40203857421875,-86.396308898925781,-86.390571594238281,-86.201499938964844,-86.046798706054688,-86.046798706054688],"y":[31.008474349975586,30.727725982666016,30.721996307373047,30.704807281494141,30.681888580322266,30.664701461791992,30.658969879150391,30.630325317382812,30.607406616210938,30.584487915039062,30.561569213867188,30.527193069458008,30.515731811523438,30.504274368286133,30.492813110351562,30.469894409179688,30.458436965942383,30.452705383300781,30.452705383300781,30.435518264770508,30.401142120361328,30.401142120361328,30.286548614501953,30.309467315673828,30.343845367431641,30.378223419189453,30.395410537719727,30.401142120361328,30.446979522705078,30.435518264770508,30.441247940063477,30.452705383300781,30.452705383300781,30.446979522705078,30.446979522705078,30.446979522705078,30.435518264770508,30.424060821533203,30.429786682128906,30.435518264770508,30.452705383300781,30.475624084472656,30.498542785644531,30.515731811523438,30.515731811523438,30.515731811523438,30.504274368286133,30.498542785644531,30.504274368286133,30.510004043579102,30.492813110351562,30.750644683837891,31.008474349975586,31.008474349975586,31.008474349975586,31.008474349975586],"text":"Crime:  18","type":"scatter","mode":"lines","line":{"width":0.75590551181102372,"color":"rgba(255,255,255,1)","dash":"solid"},"fill":"toself","fillcolor":"rgba(44,16,79,1)","hoveron":"fills","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[-85.170181274414062,-85.193092346191406,-85.216018676757812,-85.238929748535156,-85.261856079101562,-85.296226501464844,-85.319145202636719,-85.342063903808594,-85.364982604980469,-85.382171630859375,-85.399360656738281,-85.433731079101562,-85.445198059082031,-85.456657409667969,-85.450927734375,-85.450927734375,-85.439468383789062,-85.428009033203125,-85.410820007324219,-85.40509033203125,-85.40509033203125,-85.410820007324219,-85.40509033203125,-85.382171630859375,-85.364982604980469,-85.347793579101562,-85.330604553222656,-85.324874877929688,-85.330604553222656,-85.353523254394531,-85.376441955566406,-85.393630981445312,-85.393630981445312,-85.410820007324219,-85.40509033203125,-85.130073547363281,-85.152984619140625,-85.158714294433594,-85.164443969726562,-85.152984619140625,-85.130073547363281,-85.0899658203125,-85.067039489746094,-85.04412841796875,-85.032669067382812,-85.038398742675781,-85.032669067382812,-85.04412841796875,-85.032669067382812,-85.038398742675781,-85.061309814453125,-85.101417541503906,-85.130073547363281,-85.170181274414062,-85.170181274414062],"y":[29.742238998413086,29.742238998413086,29.725051879882812,29.707859039306641,29.707859039306641,29.707859039306641,29.707859039306641,29.696401596069336,29.684944152832031,29.684944152832031,29.690671920776367,29.736509323120117,29.782346725463867,29.816722869873047,29.845371246337891,29.868289947509766,29.879749298095703,29.896936416625977,29.902667999267578,29.902667999267578,29.822452545166016,29.788076400756836,29.747970581054688,29.719320297241211,29.707859039306641,29.725051879882812,29.759428024291992,29.799533843994141,29.845371246337891,29.879749298095703,29.902667999267578,29.937044143676758,29.954235076904297,29.965692520141602,30.217794418334961,30.212064743041992,30.171957015991211,30.126119613647461,30.097475051879883,30.080282211303711,30.051637649536133,30.017257690429688,30.005800247192383,29.977149963378906,29.937044143676758,29.896936416625977,29.874017715454102,29.839641571044922,29.816722869873047,29.805265426635742,29.782346725463867,29.776615142822266,29.782346725463867,29.742238998413086,29.742238998413086],"text":"Crime:  19","type":"scatter","mode":"lines","line":{"width":0.75590551181102372,"color":"rgba(255,255,255,1)","dash":"solid"},"fill":"toself","fillcolor":"rgba(46,16,83,1)","hoveron":"fills","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[-82.041824340820312,-82.036094665527344,-82.041824340820312,-82.133499145507812,-82.460090637207031,-82.460090637207031,-82.213714599609375,-82.225173950195312,-82.242362976074219,-82.230903625488281,-82.213714599609375,-82.207984924316406,-82.207984924316406,-82.179336547851562,-82.162147521972656,-82.122039794921875,-82.087661743164062,-82.047561645507812,-82.041824340820312,-82.041824340820312],"y":[30.263629913330078,30.171957015991211,30.137580871582031,30.137580871582031,30.137580871582031,30.573026657104492,30.561569213867188,30.538650512695312,30.527193069458008,30.510004043579102,30.492813110351562,30.469894409179688,30.395410537719727,30.372491836547852,30.361034393310547,30.361034393310547,30.355304718017578,30.361034393310547,30.263629913330078,30.263629913330078],"text":"Crime:  20","type":"scatter","mode":"lines","line":{"width":0.75590551181102372,"color":"rgba(255,255,255,1)","dash":"solid"},"fill":"toself","fillcolor":"rgba(48,16,88,1)","hoveron":"fills","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[null,null],"y":[null,null],"text":"Crime:  21","type":"scatter","mode":"lines","line":{"width":0.75590551181102372,"color":"rgba(255,255,255,1)","dash":"solid"},"fill":"toself","fillcolor":"rgba(50,16,92,1)","hoveron":"fills","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[-83.239311218261719,-83.37109375,-83.468490600585938,-83.468490600585938,-83.812271118164062,-83.795074462890625,-83.783615112304688,-83.795074462890625,-83.789344787597656,-83.766433715820312,-83.743507385253906,-83.720596313476562,-83.720596313476562,-83.720596313476562,-83.669021606445312,-83.617462158203125,-83.606002807617188,-83.588813781738281,-83.59454345703125,-83.382545471191406,-83.285148620605469,-83.245040893554688,-83.239311218261719,-83.222122192382812,-83.222122192382812,-83.216384887695312,-83.210655212402344,-83.193473815917969,-83.159095764160156,-83.187744140625,-83.199203491210938,-83.204933166503906,-83.216384887695312,-83.239311218261719,-83.239311218261719],"y":[30.257902145385742,30.257902145385742,30.257902145385742,30.303739547729492,30.303739547729492,30.320926666259766,30.332386016845703,30.355304718017578,30.378223419189453,30.389680862426758,30.401142120361328,30.458436965942383,30.492813110351562,30.532918930053711,30.544380187988281,30.550111770629883,30.567298889160156,30.618864059448242,30.647512435913086,30.630325317382812,30.630325317382812,30.590217590332031,30.561569213867188,30.510004043579102,30.487085342407227,30.469894409179688,30.441247940063477,30.418329238891602,30.389680862426758,30.361034393310547,30.320926666259766,30.309467315673828,30.286548614501953,30.257902145385742,30.257902145385742],"text":"Crime:  26","type":"scatter","mode":"lines","line":{"width":0.75590551181102372,"color":"rgba(255,255,255,1)","dash":"solid"},"fill":"toself","fillcolor":"rgba(60,15,112,1)","hoveron":"fills","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[-82.735107421875,-82.706459045410156,-82.68927001953125,-82.666351318359375,-82.620513916015625,-82.603324890136719,-82.586135864257812,-82.574676513671875,-82.523109436035156,-82.505928039550781,-82.465812683105469,-82.425704956054688,-82.322578430175781,-82.293930053710938,-82.271011352539062,-82.213714599609375,-82.179336547851562,-82.173606872558594,-82.179336547851562,-82.23663330078125,-82.259552001953125,-82.271011352539062,-82.425704956054688,-82.425704956054688,-82.637702941894531,-82.637702941894531,-82.654891967773438,-82.654891967773438,-82.6434326171875,-82.6434326171875,-82.6434326171875,-82.666351318359375,-82.683540344238281,-82.694999694824219,-82.694999694824219,-82.694999694824219,-82.68927001953125,-82.677810668945312,-82.654891967773438,-82.637702941894531,-82.626243591308594,-82.620513916015625,-82.631973266601562,-82.654891967773438,-82.694999694824219,-82.712188720703125,-82.723648071289062,-82.723648071289062,-82.735107421875,-82.735107421875],"y":[29.008852005004883,29.026042938232422,29.031770706176758,29.031770706176758,29.014581680297852,29.014581680297852,29.026042938232422,29.031770706176758,29.043231964111328,29.048961639404297,29.043231964111328,29.014581680297852,28.974475860595703,28.951557159423828,28.899991989135742,28.842697143554688,28.802587509155273,28.785398483276367,28.762479782104492,28.722372055053711,28.693727493286133,28.665077209472656,28.670808792114258,28.693727493286133,28.699453353881836,28.716646194458008,28.739564895629883,28.756752014160156,28.773941040039062,28.785398483276367,28.802587509155273,28.808317184448242,28.814046859741211,28.825506210327148,28.836965560913086,28.842697143554688,28.859884262084961,28.865612030029297,28.865612030029297,28.865612030029297,28.877073287963867,28.888530731201172,28.899991989135742,28.922910690307617,28.940099716186523,28.957286834716797,28.968744277954102,28.997394561767578,29.008852005004883,29.008852005004883],"text":"Crime:  27","type":"scatter","mode":"lines","line":{"width":0.75590551181102372,"color":"rgba(255,255,255,1)","dash":"solid"},"fill":"toself","fillcolor":"rgba(64,16,113,1)","hoveron":"fills","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[-84.717544555664062,-84.247711181640625,-84.247711181640625,-84.075820922851562,-84.075820922851562,-84.104476928710938,-84.133125305175781,-84.156036376953125,-84.178962707519531,-84.213333129882812,-84.23052978515625,-84.247711181640625,-84.2763671875,-84.2763671875,-84.282089233398438,-84.305007934570312,-84.339385986328125,-84.356582641601562,-84.390953063964844,-84.390953063964844,-84.368034362792969,-84.368034362792969,-84.402412414550781,-84.419601440429688,-84.431060791015625,-84.448249816894531,-84.465438842773438,-84.476898193359375,-84.488357543945312,-84.505546569824219,-84.522735595703125,-84.534194946289062,-84.562843322753906,-84.580032348632812,-84.597221374511719,-84.643058776855469,-84.660240173339844,-84.688888549804688,-84.717544555664062,-84.723274230957031,-84.717544555664062,-84.717544555664062],"y":[30.303739547729492,30.309467315673828,30.275089263916016,30.275089263916016,30.108932495117188,30.103200912475586,30.091743469238281,30.091743469238281,30.097475051879883,30.114662170410156,30.114662170410156,30.114662170410156,30.114662170410156,30.086013793945312,30.074556350708008,30.074556350708008,30.074556350708008,30.068824768066406,30.040176391601562,30.022987365722656,29.994342803955078,29.988611221313477,29.988611221313477,29.988611221313477,29.982881546020508,29.988611221313477,29.988611221313477,29.994342803955078,29.994342803955078,29.994342803955078,29.994342803955078,30.005800247192383,30.005800247192383,30.017257690429688,30.051637649536133,30.080282211303711,30.114662170410156,30.189146041870117,30.257902145385742,30.286548614501953,30.303739547729492,30.303739547729492],"text":"Crime:  29","type":"scatter","mode":"lines","line":{"width":0.75590551181102372,"color":"rgba(255,255,255,1)","dash":"solid"},"fill":"toself","fillcolor":"rgba(71,18,114,1)","hoveron":"fills","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[-85.519676208496094,-85.49676513671875,-85.015480041503906,-84.998291015625,-84.975372314453125,-84.946723937988281,-84.940994262695312,-84.946723937988281,-84.940994262695312,-84.9066162109375,-84.877967834472656,-84.866508483886719,-84.877967834472656,-84.895156860351562,-84.9066162109375,-84.935256958007812,-84.935256958007812,-85.181640625,-85.193092346191406,-85.399360656738281,-85.450927734375,-85.450927734375,-85.502494812011719,-85.502494812011719,-85.605621337890625,-85.622817993164062,-85.611351013183594,-85.582710266113281,-85.565513610839844,-85.559783935546875,-85.519676208496094,-85.519676208496094],"y":[31.008474349975586,31.008474349975586,30.997016906738281,30.962640762329102,30.922531127929688,30.899616241455078,30.888154983520508,30.859508514404297,30.785022735595703,30.744915008544922,30.727725982666016,30.716266632080078,30.676158905029297,30.658969879150391,30.630325317382812,30.607406616210938,30.607406616210938,30.607406616210938,30.573026657104492,30.573026657104492,30.573026657104492,30.802209854125977,30.807941436767578,30.848047256469727,30.848047256469727,30.848047256469727,30.865236282348633,30.922531127929688,30.933992385864258,30.956911087036133,31.008474349975586,31.008474349975586],"text":"Crime:  32","type":"scatter","mode":"lines","line":{"width":0.75590551181102372,"color":"rgba(255,255,255,1)","dash":"solid"},"fill":"toself","fillcolor":"rgba(81,21,116,1)","hoveron":"fills","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[-81.199577331542969,-81.159469604492188,-81.107902526855469,-81.153739929199219,-81.159469604492188,-81.417304992675781,-81.42303466796875,-81.457412719726562,-81.480323791503906,-81.486053466796875,-81.503250122070312,-81.526161193847656,-81.526161193847656,-81.314170837402344,-81.319900512695312,-81.308441162109375,-81.291252136230469,-81.251144409179688,-81.199577331542969,-81.199577331542969],"y":[29.644838333129883,29.553163528442383,29.432842254638672,29.409923553466797,29.260953903198242,29.260953903198242,29.392736434936523,29.392736434936523,29.409923553466797,29.455760955810547,29.472949981689453,29.495868682861328,29.621919631958008,29.627645492553711,29.644838333129883,29.650564193725586,29.644838333129883,29.650564193725586,29.644838333129883,29.644838333129883],"text":"Crime:  34","type":"scatter","mode":"lines","line":{"width":0.75590551181102372,"color":"rgba(255,255,255,1)","dash":"solid"},"fill":"toself","fillcolor":"rgba(88,23,118,1)","hoveron":"fills","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[-82.053291320800781,-81.566268920898438,-81.571998596191406,-82.081932067871094,-82.064743041992188,-82.076202392578125,-82.093399047851562,-82.110580444335938,-82.104850769042969,-82.093399047851562,-82.047561645507812,-82.036094665527344,-82.036094665527344,-82.047561645507812,-82.076202392578125,-82.09912109375,-82.116310119628906,-82.127769470214844,-82.150688171386719,-82.167877197265625,-82.23663330078125,-82.253822326660156,-82.259552001953125,-82.259552001953125,-82.242362976074219,-82.173606872558594,-82.162147521972656,-82.162147521972656,-82.173606872558594,-82.202255249023438,-82.213714599609375,-82.23663330078125,-82.248092651367188,-82.265274047851562,-82.282470703125,-82.293930053710938,-82.334037780761719,-82.345489501953125,-82.271011352539062,-82.271011352539062,-82.053291320800781,-82.053291320800781],"y":[27.032148361206055,27.032148361206055,26.762857437133789,26.762857437133789,26.797235488891602,26.860261917114258,26.888910293579102,26.911828994750977,26.923288345336914,26.934745788574219,26.946205139160156,26.957664489746094,26.974853515625,26.980583190917969,26.969123840332031,26.963394165039062,26.963394165039062,26.963394165039062,26.963394165039062,26.957664489746094,26.997770309448242,27.003501892089844,26.997770309448242,26.974853515625,26.957664489746094,26.8831787109375,26.854532241821289,26.820154190063477,26.814424514770508,26.820154190063477,26.825883865356445,26.825883865356445,26.820154190063477,26.843072891235352,26.837343215942383,26.854532241821289,26.894638061523438,26.940475463867188,26.940475463867188,27.037878036499023,27.032148361206055,27.032148361206055],"text":"Crime:  35","type":"scatter","mode":"lines","line":{"width":0.75590551181102372,"color":"rgba(255,255,255,1)","dash":"solid"},"fill":"toself","fillcolor":"rgba(91,23,118,1)","hoveron":"fills","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[-83.760696411132812,-83.59454345703125,-83.588813781738281,-83.606002807617188,-83.617462158203125,-83.669021606445312,-83.720596313476562,-83.720596313476562,-83.720596313476562,-83.743507385253906,-83.766433715820312,-83.789344787597656,-83.795074462890625,-83.783615112304688,-83.795074462890625,-83.812271118164062,-83.846641540527344,-83.881019592285156,-83.90966796875,-83.915397644042969,-83.938316345214844,-83.95550537109375,-83.966964721679688,-83.972694396972656,-83.984153747558594,-84.029983520507812,-84.075820922851562,-84.075820922851562,-84.070098876953125,-84.029983520507812,-84.029983520507812,-84.007072448730469,-83.984153747558594,-83.961235046386719,-84.007072448730469,-84.012802124023438,-83.760696411132812,-83.760696411132812],"y":[30.658969879150391,30.647512435913086,30.618864059448242,30.567298889160156,30.550111770629883,30.544380187988281,30.532918930053711,30.492813110351562,30.458436965942383,30.401142120361328,30.389680862426758,30.378223419189453,30.355304718017578,30.332386016845703,30.320926666259766,30.303739547729492,30.275089263916016,30.269359588623047,30.240713119506836,30.206333160400391,30.189146041870117,30.183414459228516,30.160499572753906,30.137580871582031,30.103200912475586,30.114662170410156,30.108932495117188,30.275089263916016,30.441247940063477,30.446979522705078,30.527193069458008,30.515731811523438,30.515731811523438,30.550111770629883,30.613136291503906,30.670431137084961,30.658969879150391,30.658969879150391],"text":"Crime:  36","type":"scatter","mode":"lines","line":{"width":0.75590551181102372,"color":"rgba(255,255,255,1)","dash":"solid"},"fill":"toself","fillcolor":"rgba(94,24,119,1)","hoveron":"fills","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[-85.170181274414062,-85.130073547363281,-85.101417541503906,-85.061309814453125,-85.038398742675781,-85.032669067382812,-85.04412841796875,-85.032669067382812,-85.038398742675781,-85.032669067382812,-85.04412841796875,-85.026931762695312,-85.021202087402344,-84.837860107421875,-84.580032348632812,-84.562843322753906,-84.534194946289062,-84.522735595703125,-84.505546569824219,-84.488357543945312,-84.476898193359375,-84.465438842773438,-84.448249816894531,-84.431060791015625,-84.40814208984375,-84.373764038085938,-84.350845336914062,-84.345115661621094,-84.356582641601562,-84.368034362792969,-84.373764038085938,-84.413871765136719,-84.436790466308594,-84.4539794921875,-84.465438842773438,-84.482620239257812,-84.49981689453125,-84.522735595703125,-84.534194946289062,-84.562843322753906,-84.625869750976562,-84.717544555664062,-84.809219360351562,-84.855049133300781,-84.883697509765625,-84.895156860351562,-84.900886535644531,-84.895156860351562,-84.883697509765625,-84.900886535644531,-84.918075561523438,-84.946723937988281,-84.946723937988281,-84.963912963867188,-84.986831665039062,-84.998291015625,-85.009750366210938,-85.021202087402344,-85.061309814453125,-85.124343872070312,-85.170181274414062,-85.170181274414062,null,-86.797370910644531,-86.705696105957031,-86.390571594238281,-86.396308898925781,-86.40203857421875,-86.424949645996094,-86.442146301269531,-86.453605651855469,-86.465057373046875,-86.470787048339844,-86.482246398925781,-86.505165100097656,-86.510894775390625,-86.505165100097656,-86.510894775390625,-86.528083801269531,-86.556732177734375,-86.568191528320312,-86.585380554199219,-86.608299255371094,-86.62548828125,-86.677055358886719,-86.757270812988281,-86.803108215332031,-86.797370910644531,-86.797370910644531,-86.797370910644531,null,-86.40203857421875,-86.40203857421875,-86.436408996582031,-86.476516723632812,-86.49371337890625,-86.510894775390625,-86.510894775390625,-86.505165100097656,-86.476516723632812,-86.430679321289062,-86.40203857421875,-86.40203857421875,null,-81.944419860839844,-81.950149536132812,-81.950149536132812,-81.950149536132812,-81.973068237304688,-82.001724243164062,-82.018905639648438,-82.030364990234375,-82.041824340820312,-82.059013366699219,-82.059013366699219,-82.059013366699219,-82.087661743164062,-82.110580444335938,-82.162147521972656,-82.196525573730469,-82.230903625488281,-82.23663330078125,-82.253822326660156,-82.271011352539062,-82.282470703125,-82.271011352539062,-82.259552001953125,-82.23663330078125,-82.179336547851562,-82.173606872558594,-82.179336547851562,-82.213714599609375,-82.271011352539062,-82.293930053710938,-81.944419860839844,-81.944419860839844,null,null,null],"y":[29.742238998413086,29.782346725463867,29.776615142822266,29.782346725463867,29.805265426635742,29.816722869873047,29.839641571044922,29.874017715454102,29.896936416625977,29.937044143676758,29.977149963378906,29.994342803955078,30.022987365722656,30.022987365722656,30.017257690429688,30.005800247192383,30.005800247192383,29.994342803955078,29.994342803955078,29.994342803955078,29.994342803955078,29.988611221313477,29.988611221313477,29.982881546020508,29.971424102783203,29.959962844848633,29.948505401611328,29.931316375732422,29.919855117797852,29.908397674560547,29.908397674560547,29.914125442504883,29.931316375732422,29.937044143676758,29.937044143676758,29.931316375732422,29.919855117797852,29.925586700439453,29.925586700439453,29.919855117797852,29.879749298095703,29.845371246337891,29.799533843994141,29.776615142822266,29.759428024291992,29.759428024291992,29.765157699584961,29.793804168701172,29.805265426635742,29.816722869873047,29.816722869873047,29.810993194580078,29.788076400756836,29.776615142822266,29.776615142822266,29.765157699584961,29.742238998413086,29.736509323120117,29.736509323120117,29.742238998413086,29.742238998413086,29.742238998413086,null,31.008474349975586,31.008474349975586,31.008474349975586,30.750644683837891,30.492813110351562,30.492813110351562,30.492813110351562,30.504274368286133,30.515731811523438,30.532918930053711,30.532918930053711,30.532918930053711,30.515731811523438,30.504274368286133,30.487085342407227,30.481355667114258,30.487085342407227,30.481355667114258,30.458436965942383,30.458436965942383,30.446979522705078,30.446979522705078,30.446979522705078,30.446979522705078,30.773563385009766,31.008474349975586,31.008474349975586,null,30.446979522705078,30.401142120361328,30.412599563598633,30.418329238891602,30.418329238891602,30.429786682128906,30.446979522705078,30.446979522705078,30.446979522705078,30.441247940063477,30.446979522705078,30.446979522705078,null,28.951557159423828,28.338493347167969,28.315574645996094,28.309844970703125,28.304115295410156,28.315574645996094,28.315574645996094,28.315574645996094,28.304115295410156,28.304115295410156,28.476003646850586,28.527568817138672,28.521839141845703,28.527568817138672,28.556217193603516,28.561944961547852,28.573404312133789,28.590595245361328,28.607782363891602,28.624971389770508,28.647890090942383,28.665077209472656,28.693727493286133,28.722372055053711,28.762479782104492,28.785398483276367,28.802587509155273,28.842697143554688,28.899991989135742,28.951557159423828,28.951557159423828,28.951557159423828,null,null,null],"text":"Crime:  37","type":"scatter","mode":"lines","line":{"width":0.75590551181102372,"color":"rgba(255,255,255,1)","dash":"solid"},"fill":"toself","fillcolor":"rgba(97,26,120,1)","hoveron":"fills","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[-82.036094665527344,-81.663673400878906,-81.669403076171875,-81.675132751464844,-81.663673400878906,-81.663673400878906,-81.663673400878906,-81.669403076171875,-81.669403076171875,-81.600654602050781,-81.589195251464844,-81.594924926757812,-81.571998596191406,-81.806915283203125,-81.847023010253906,-81.892852783203125,-81.9215087890625,-81.932960510253906,-81.944419860839844,-81.990257263183594,-82.013175964355469,-82.047561645507812,-82.041824340820312,-82.036094665527344,-82.036094665527344],"y":[30.171957015991211,30.171957015991211,30.154769897460938,30.131851196289062,30.114662170410156,30.091743469238281,30.074556350708008,30.045906066894531,30.022987365722656,29.965692520141602,29.937044143676758,29.902667999267578,29.822452545166016,29.822452545166016,29.799533843994141,29.788076400756836,29.776615142822266,29.753696441650391,29.742238998413086,29.742238998413086,29.742238998413086,29.719320297241211,30.137580871582031,30.171957015991211,30.171957015991211],"text":"Crime:  41","type":"scatter","mode":"lines","line":{"width":0.75590551181102372,"color":"rgba(255,255,255,1)","dash":"solid"},"fill":"toself","fillcolor":"rgba(109,30,122,1)","hoveron":"fills","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[-81.635032653808594,-81.617835998535156,-81.600654602050781,-81.594924926757812,-81.571998596191406,-81.560539245605469,-81.549087524414062,-81.520431518554688,-81.486053466796875,-81.474601745605469,-81.463142395019531,-81.445945739746094,-81.434494018554688,-81.405845642089844,-81.365737915039062,-81.354270935058594,-81.348548889160156,-81.337089538574219,-81.342819213867188,-81.365737915039062,-81.388656616210938,-81.394386291503906,-81.394386291503906,-81.635032653808594,-81.640762329101562,-81.612106323242188,-81.600654602050781,-81.617835998535156,-81.640762329101562,-81.640762329101562,-81.789726257324219,-81.795455932617188,-81.864212036132812,-81.864212036132812,-81.950149536132812,-81.944419860839844,-81.663673400878906,-81.657943725585938,-81.652214050292969,-81.640762329101562,-81.635032653808594,-81.635032653808594,null,-81.554817199707031,-81.537620544433594,-81.526161193847656,-81.508979797363281,-81.503250122070312,-81.480323791503906,-81.463142395019531,-81.451683044433594,-81.451683044433594,-81.463142395019531,-81.4688720703125,-81.474601745605469,-81.457412719726562,-81.457412719726562,-81.451683044433594,-81.503250122070312,-81.508979797363281,-81.531890869140625,-81.549087524414062,-81.566268920898438,-81.583457946777344,-81.600654602050781,-81.600654602050781,-81.600654602050781,-81.612106323242188,-81.640762329101562,-81.657943725585938,-81.680870056152344,-81.709510803222656,-81.720970153808594,-81.743888854980469,-82.041824340820312,-82.047561645507812,-82.047561645507812,-82.036094665527344,-82.030364990234375,-82.024635314941406,-82.030364990234375,-82.047561645507812,-82.053291320800781,-82.053291320800781,-82.047561645507812,-82.024635314941406,-82.024635314941406,-82.013175964355469,-81.984527587890625,-81.973068237304688,-81.961616516113281,-81.944419860839844,-81.927238464355469,-81.892852783203125,-81.87567138671875,-81.835563659667969,-81.801185607910156,-81.772537231445312,-81.749618530273438,-81.732429504394531,-81.69232177734375,-81.669403076171875,-81.652214050292969,-81.635032653808594,-81.600654602050781,-81.554817199707031,-81.554817199707031,null,-82.104850769042969,-82.654891967773438,-82.798126220703125,-82.798126220703125,-82.775215148925781,-82.740837097167969,-82.735107421875,-82.729377746582031,-82.729377746582031,-82.717910766601562,-82.706459045410156,-82.700729370117188,-82.683540344238281,-82.265274047851562,-82.259552001953125,-82.059013366699219,-82.059013366699219,-82.059013366699219,-82.104850769042969,-82.104850769042969,-82.104850769042969],"y":[29.255224227905273,29.215116500854492,29.203659057617188,29.197927474975586,29.197927474975586,29.186470031738281,29.175008773803711,29.146364212036133,29.094795227050781,29.083337783813477,29.083337783813477,29.060419082641602,29.037500381469727,29.014581680297852,29.008852005004883,28.957286834716797,28.922910690307617,28.911449432373047,28.859884262084961,28.842697143554688,28.831235885620117,28.814046859741211,28.773941040039062,28.773941040039062,28.665077209472656,28.642160415649414,28.619241714477539,28.590595245361328,28.550485610961914,28.338493347167969,28.344223022460938,28.349952697753906,28.355680465698242,28.338493347167969,28.338493347167969,28.951557159423828,28.945829391479492,28.951557159423828,29.043231964111328,29.043231964111328,29.255224227905273,29.255224227905273,null,30.716266632080078,30.687620162963867,30.687620162963867,30.676158905029297,30.670431137084961,30.676158905029297,30.681888580322266,30.681888580322266,30.670431137084961,30.641782760620117,30.618864059448242,30.595945358276367,30.567298889160156,30.555837631225586,30.532918930053711,30.532918930053711,30.515731811523438,30.515731811523438,30.532918930053711,30.538650512695312,30.550111770629883,30.550111770629883,30.555837631225586,30.573026657104492,30.573026657104492,30.567298889160156,30.550111770629883,30.555837631225586,30.561569213867188,30.538650512695312,30.510004043579102,30.263629913330078,30.361034393310547,30.383953094482422,30.441247940063477,30.515731811523438,30.555837631225586,30.584487915039062,30.618864059448242,30.704807281494141,30.733457565307617,30.750644683837891,30.767833709716797,30.790752410888672,30.796482086181641,30.790752410888672,30.796482086181641,30.807941436767578,30.825128555297852,30.825128555297852,30.830860137939453,30.807941436767578,30.790752410888672,30.790752410888672,30.767833709716797,30.773563385009766,30.762104034423828,30.733457565307617,30.744915008544922,30.744915008544922,30.727725982666016,30.721996307373047,30.716266632080078,30.716266632080078,null,28.172334671020508,28.166604995727539,28.172334671020508,28.189523696899414,28.212440490722656,28.269737243652344,28.275466918945312,28.304115295410156,28.344223022460938,28.372871398925781,28.395788192749023,28.418706893920898,28.441625595092773,28.441625595092773,28.476003646850586,28.476003646850586,28.304115295410156,28.252548217773438,28.246818542480469,28.172334671020508,28.172334671020508],"text":"Crime:  42","type":"scatter","mode":"lines","line":{"width":0.75590551181102372,"color":"rgba(255,255,255,1)","dash":"solid"},"fill":"toself","fillcolor":"rgba(112,31,123,1)","hoveron":"fills","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[null,null],"y":[null,null],"text":"Crime:  43","type":"scatter","mode":"lines","line":{"width":0.75590551181102372,"color":"rgba(255,255,255,1)","dash":"solid"},"fill":"toself","fillcolor":"rgba(115,32,124,1)","hoveron":"fills","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[-82.271011352539062,-82.282470703125,-82.271011352539062,-82.253822326660156,-82.23663330078125,-82.230903625488281,-82.196525573730469,-82.162147521972656,-82.110580444335938,-82.087661743164062,-82.059013366699219,-82.059013366699219,-82.259552001953125,-82.265274047851562,-82.683540344238281,-82.677810668945312,-82.68927001953125,-82.677810668945312,-82.666351318359375,-82.660621643066406,-82.660621643066406,-82.672073364257812,-82.672073364257812,-82.666351318359375,-82.654891967773438,-82.637702941894531,-82.425704956054688,-82.425704956054688,-82.271011352539062,-82.271011352539062],"y":[28.665077209472656,28.647890090942383,28.624971389770508,28.607782363891602,28.590595245361328,28.573404312133789,28.561944961547852,28.556217193603516,28.527568817138672,28.521839141845703,28.527568817138672,28.476003646850586,28.476003646850586,28.441625595092773,28.441625595092773,28.458812713623047,28.476003646850586,28.516109466552734,28.527568817138672,28.550485610961914,28.584863662719727,28.619241714477539,28.642160415649414,28.659347534179688,28.670808792114258,28.699453353881836,28.693727493286133,28.670808792114258,28.665077209472656,28.665077209472656],"text":"Crime:  44","type":"scatter","mode":"lines","line":{"width":0.75590551181102372,"color":"rgba(255,255,255,1)","dash":"solid"},"fill":"toself","fillcolor":"rgba(118,33,124,1)","hoveron":"fills","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[-82.935638427734375,-82.861160278320312,-82.855422973632812,-82.758018493652344,-82.752296447753906,-82.666351318359375,-82.660621643066406,-82.563217163085938,-82.563217163085938,-82.408523559570312,-82.408523559570312,-82.523109436035156,-82.523109436035156,-82.574676513671875,-82.586135864257812,-82.603324890136719,-82.620513916015625,-82.666351318359375,-82.68927001953125,-82.706459045410156,-82.735107421875,-82.746566772460938,-82.740837097167969,-82.740837097167969,-82.746566772460938,-82.758018493652344,-82.792404174804688,-82.803855895996094,-82.809585571289062,-82.803855895996094,-82.798126220703125,-82.809585571289062,-82.849693298339844,-82.884071350097656,-82.975746154785156,-83.010124206542969,-83.044502258300781,-83.067420959472656,-83.073150634765625,-83.073150634765625,-83.067420959472656,-83.090339660644531,-83.118988037109375,-83.14190673828125,-83.153366088867188,-83.130447387695312,-83.107528686523438,-83.0960693359375,-83.078880310058594,-83.067420959472656,-83.061691284179688,-83.038772583007812,-83.015853881835938,-83.010124206542969,-82.987205505371094,-82.970016479492188,-82.970016479492188,-82.964286804199219,-82.941368103027344,-82.935638427734375,-82.935638427734375],"y":[29.593269348144531,29.593269348144531,29.581811904907227,29.581811904907227,29.570350646972656,29.570350646972656,29.547431945800781,29.535974502563477,29.490137100219727,29.478679656982422,29.220846176147461,29.215116500854492,29.043231964111328,29.031770706176758,29.026042938232422,29.014581680297852,29.014581680297852,29.031770706176758,29.031770706176758,29.026042938232422,29.008852005004883,29.031770706176758,29.054689407348633,29.066150665283203,29.071876525878906,29.083337783813477,29.089069366455078,29.094795227050781,29.117713928222656,29.140632629394531,29.152093887329102,29.169282913208008,29.175008773803711,29.175008773803711,29.186470031738281,29.186470031738281,29.197927474975586,29.209388732910156,29.226577758789062,29.243764877319336,29.260953903198242,29.289602279663086,29.295333862304688,29.295333862304688,29.306791305541992,29.318248748779297,29.318248748779297,29.329710006713867,29.329710006713867,29.341167449951172,29.381275177001953,29.392736434936523,29.409923553466797,29.432842254638672,29.467218399047852,29.490137100219727,29.530244827270508,29.553163528442383,29.576082229614258,29.593269348144531,29.593269348144531],"text":"Crime:  45","type":"scatter","mode":"lines","line":{"width":0.75590551181102372,"color":"rgba(255,255,255,1)","dash":"solid"},"fill":"toself","fillcolor":"rgba(121,34,125,1)","hoveron":"fills","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[-80.87872314453125,-80.884452819824219,-81.291252136230469,-81.2855224609375,-81.571998596191406,-81.571998596191406,-81.480323791503906,-81.480323791503906,-81.451683044433594,-81.445945739746094,-80.947471618652344,-80.947471618652344,-80.884452819824219,-80.87872314453125,-80.87872314453125,-80.87872314453125],"y":[26.333139419555664,26.247196197509766,26.252925872802734,26.510757446289062,26.510757446289062,26.762857437133789,26.762857437133789,26.774316787719727,26.768589019775391,26.762857437133789,26.757129669189453,26.768589019775391,26.745670318603516,26.734210968017578,26.333139419555664,26.333139419555664],"text":"Crime:  47","type":"scatter","mode":"lines","line":{"width":0.75590551181102372,"color":"rgba(255,255,255,1)","dash":"solid"},"fill":"toself","fillcolor":"rgba(127,36,126,1)","hoveron":"fills","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[-83.411201477050781,-83.37109375,-83.353897094726562,-83.348167419433594,-83.330978393554688,-83.319526672363281,-83.32525634765625,-83.313796997070312,-82.935638427734375,-82.935638427734375,-82.947097778320312,-82.947097778320312,-82.947097778320312,-82.958564758300781,-82.964286804199219,-82.935638427734375,-82.941368103027344,-82.964286804199219,-82.970016479492188,-82.970016479492188,-82.987205505371094,-83.010124206542969,-83.015853881835938,-83.038772583007812,-83.061691284179688,-83.067420959472656,-83.078880310058594,-83.0960693359375,-83.107528686523438,-83.130447387695312,-83.153366088867188,-83.164825439453125,-83.164825439453125,-83.187744140625,-83.210655212402344,-83.23358154296875,-83.250762939453125,-83.267959594726562,-83.2794189453125,-83.296600341796875,-83.308059692382812,-83.313796997070312,-83.330978393554688,-83.348167419433594,-83.37109375,-83.388275146484375,-83.399734497070312,-83.394004821777344,-83.399734497070312,-83.411201477050781,-83.411201477050781,-83.411201477050781],"y":[29.673482894897461,29.673482894897461,29.696401596069336,29.725051879882812,29.747970581054688,29.765157699584961,29.788076400756836,29.822452545166016,29.816722869873047,29.776615142822266,29.736509323120117,29.707859039306641,29.679214477539062,29.644838333129883,29.593269348144531,29.593269348144531,29.576082229614258,29.553163528442383,29.530244827270508,29.490137100219727,29.467218399047852,29.432842254638672,29.409923553466797,29.392736434936523,29.381275177001953,29.341167449951172,29.329710006713867,29.329710006713867,29.318248748779297,29.318248748779297,29.306791305541992,29.335439682006836,29.364086151123047,29.398466110229492,29.421380996704102,29.438573837280273,29.444299697875977,29.444299697875977,29.444299697875977,29.438573837280273,29.455760955810547,29.472949981689453,29.495868682861328,29.501598358154297,29.513055801391602,29.524513244628906,29.535974502563477,29.576082229614258,29.593269348144531,29.627645492553711,29.673482894897461,29.673482894897461],"text":"Crime:  49","type":"scatter","mode":"lines","line":{"width":0.75590551181102372,"color":"rgba(255,255,255,1)","dash":"solid"},"fill":"toself","fillcolor":"rgba(133,38,128,1)","hoveron":"fills","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[-82.425704956054688,-82.385597229003906,-82.351219177246094,-82.322578430175781,-82.305381774902344,-82.288200378417969,-82.271011352539062,-82.196525573730469,-82.173606872558594,-82.162147521972656,-82.139228820800781,-82.133499145507812,-82.041824340820312,-82.047561645507812,-82.087661743164062,-82.122039794921875,-82.139228820800781,-82.225173950195312,-82.282470703125,-82.305381774902344,-82.345489501953125,-82.3741455078125,-82.425704956054688,-82.425704956054688],"y":[29.914125442504883,29.937044143676758,29.948505401611328,29.954235076904297,29.959962844848633,29.988611221313477,30.005800247192383,30.051637649536133,30.080282211303711,30.091743469238281,30.103200912475586,30.137580871582031,30.137580871582031,29.719320297241211,29.747970581054688,29.822452545166016,29.822452545166016,29.839641571044922,29.839641571044922,29.839641571044922,29.868289947509766,29.874017715454102,29.914125442504883,29.914125442504883],"text":"Crime:  50","type":"scatter","mode":"lines","line":{"width":0.75590551181102372,"color":"rgba(255,255,255,1)","dash":"solid"},"fill":"toself","fillcolor":"rgba(136,40,128,1)","hoveron":"fills","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[null,null],"y":[null,null],"text":"Crime:  51","type":"scatter","mode":"lines","line":{"width":0.75590551181102372,"color":"rgba(255,255,255,1)","dash":"solid"},"fill":"toself","fillcolor":"rgba(139,41,129,1)","hoveron":"fills","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[-84.866508483886719,-84.373764038085938,-84.310745239257812,-84.305007934570312,-84.322196960449219,-84.3623046875,-84.373764038085938,-84.390953063964844,-84.40814208984375,-84.448249816894531,-84.545654296875,-84.602951049804688,-84.6373291015625,-84.660240173339844,-84.688888549804688,-84.688888549804688,-84.717544555664062,-84.723274230957031,-84.792022705078125,-84.797752380371094,-84.832130432128906,-84.832130432128906,-84.895156860351562,-84.900886535644531,-84.935256958007812,-84.9066162109375,-84.895156860351562,-84.877967834472656,-84.866508483886719,-84.866508483886719],"y":[30.716266632080078,30.687620162963867,30.687620162963867,30.641782760620117,30.613136291503906,30.590217590332031,30.567298889160156,30.532918930053711,30.487085342407227,30.458436965942383,30.441247940063477,30.412599563598633,30.401142120361328,30.395410537719727,30.395410537719727,30.418329238891602,30.424060821533203,30.458436965942383,30.469894409179688,30.515731811523438,30.515731811523438,30.532918930053711,30.538650512695312,30.607406616210938,30.607406616210938,30.630325317382812,30.658969879150391,30.676158905029297,30.716266632080078,30.716266632080078],"text":"Crime:  52","type":"scatter","mode":"lines","line":{"width":0.75590551181102372,"color":"rgba(255,255,255,1)","dash":"solid"},"fill":"toself","fillcolor":"rgba(143,42,128,1)","hoveron":"fills","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[-80.214088439941406,-80.196907043457031,-80.208358764648438,-80.208358764648438,-80.179710388183594,-80.151069641113281,-80.133872985839844,-80.116691589355469,-80.093772888183594,-80.082305908203125,-80.151069641113281,-80.151069641113281,-80.60943603515625,-80.615158081054688,-80.626617431640625,-80.655265808105469,-80.649543762207031,-80.655265808105469,-80.678184509277344,-80.672454833984375,-80.28857421875,-80.28857421875,-80.214088439941406,-80.214088439941406],"y":[27.25560188293457,27.198307037353516,27.169658660888672,27.152469635009766,27.141010284423828,27.135280609130859,27.118093490600586,27.077985763549805,27.014961242675781,26.957664489746094,26.957664489746094,26.946205139160156,26.946205139160156,26.969123840332031,27.00922966003418,27.05506706237793,27.077985763549805,27.100902557373047,27.135280609130859,27.204034805297852,27.204034805297852,27.25560188293457,27.25560188293457,27.25560188293457],"text":"Crime:  53","type":"scatter","mode":"lines","line":{"width":0.75590551181102372,"color":"rgba(255,255,255,1)","dash":"solid"},"fill":"toself","fillcolor":"rgba(146,43,127,1)","hoveron":"fills","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[-81.571998596191406,-81.594924926757812,-81.589195251464844,-81.600654602050781,-81.669403076171875,-81.669403076171875,-81.663673400878906,-81.663673400878906,-81.663673400878906,-81.635032653808594,-81.623565673828125,-81.594924926757812,-81.554817199707031,-81.537620544433594,-81.531890869140625,-81.434494018554688,-81.428764343261719,-81.365737915039062,-81.354270935058594,-81.33135986328125,-81.291252136230469,-81.279792785644531,-81.291252136230469,-81.268333435058594,-81.251144409179688,-81.251144409179688,-81.245414733886719,-81.233955383300781,-81.211036682128906,-81.199577331542969,-81.199577331542969,-81.251144409179688,-81.291252136230469,-81.308441162109375,-81.319900512695312,-81.314170837402344,-81.526161193847656,-81.526161193847656,-81.531890869140625,-81.571998596191406,-81.571998596191406],"y":[29.822452545166016,29.902667999267578,29.937044143676758,29.965692520141602,30.022987365722656,30.045906066894531,30.074556350708008,30.091743469238281,30.114662170410156,30.114662170410156,30.114662170410156,30.114662170410156,30.097475051879883,30.091743469238281,30.086013793945312,30.086013793945312,30.246440887451172,30.246440887451172,30.189146041870117,30.097475051879883,29.965692520141602,29.919855117797852,29.879749298095703,29.862560272216797,29.833911895751953,29.788076400756836,29.725051879882812,29.702133178710938,29.690671920776367,29.673482894897461,29.644838333129883,29.650564193725586,29.644838333129883,29.650564193725586,29.644838333129883,29.627645492553711,29.621919631958008,29.753696441650391,29.765157699584961,29.822452545166016,29.822452545166016],"text":"Crime:  54","type":"scatter","mode":"lines","line":{"width":0.75590551181102372,"color":"rgba(255,255,255,1)","dash":"solid"},"fill":"toself","fillcolor":"rgba(150,44,126,1)","hoveron":"fills","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[-80.884452819824219,-80.890182495117188,-80.890182495117188,-81.382926940917969,-81.411575317382812,-81.463142395019531,-81.503250122070312,-81.526161193847656,-81.543357849121094,-81.566268920898438,-81.577728271484375,-81.612106323242188,-81.635032653808594,-81.652214050292969,-81.675132751464844,-81.69232177734375,-81.709510803222656,-81.720970153808594,-81.749618530273438,-81.78399658203125,-81.824104309082031,-81.847023010253906,-81.852745056152344,-81.852745056152344,-81.818374633789062,-81.818374633789062,-81.669403076171875,-81.669403076171875,-81.571998596191406,-81.571998596191406,-81.2855224609375,-81.291252136230469,-80.884452819824219,-80.884452819824219],"y":[26.247196197509766,25.972177505493164,25.794559478759766,25.800289154052734,25.828937530517578,25.863315582275391,25.880504608154297,25.886232376098633,25.909151077270508,25.909151077270508,25.89769172668457,25.914882659912109,25.909151077270508,25.914882659912109,25.920610427856445,25.914882659912109,25.914882659912109,25.920610427856445,25.937799453735352,26.000823974609375,26.132604598999023,26.235736846923828,26.293033599853516,26.327411651611328,26.333139419555664,26.315952301025391,26.315952301025391,26.424814224243164,26.4305419921875,26.510757446289062,26.510757446289062,26.252925872802734,26.247196197509766,26.247196197509766],"text":"Crime:  55","type":"scatter","mode":"lines","line":{"width":0.75590551181102372,"color":"rgba(255,255,255,1)","dash":"solid"},"fill":"toself","fillcolor":"rgba(153,45,126,1)","hoveron":"fills","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[-81.130821228027344,-81.142288208007812,-81.159469604492188,-81.176658630371094,-81.182395935058594,-81.176658630371094,-81.188125610351562,-81.182395935058594,-81.113632202148438,-81.027687072753906,-81.021965026855469,-81.004776000976562,-80.993309020996094,-80.987579345703125,-80.964668273925781,-80.953208923339844,-81.165199279785156,-81.170928955078125,-81.279792785644531,-81.279792785644531,-81.337089538574219,-81.337089538574219,-81.360008239746094,-81.360008239746094,-81.566268920898438,-81.560539245605469,-81.566268920898438,-81.130821228027344,-81.130821228027344,null,-80.981857299804688,-81.314170837402344,-81.319900512695312,-81.445945739746094,-81.445945739746094,-81.434494018554688,-81.411575317382812,-81.400108337402344,-81.394386291503906,-81.394386291503906,-81.388656616210938,-81.365737915039062,-81.342819213867188,-81.33135986328125,-81.314170837402344,-81.245414733886719,-81.216766357421875,-81.199577331542969,-81.176658630371094,-81.165199279785156,-81.159469604492188,-81.113632202148438,-81.107902526855469,-81.107902526855469,-81.096450805664062,-81.079254150390625,-81.050613403320312,-81.044883728027344,-81.044883728027344,-81.021965026855469,-81.010505676269531,-80.987579345703125,-80.981857299804688,-80.981857299804688],"y":[27.645212173461914,27.564998626708984,27.564998626708984,27.564998626708984,27.542079925537109,27.530622482299805,27.496244430541992,27.473325729370117,27.410301208496094,27.353006362915039,27.312898635864258,27.289979934692383,27.249872207641602,27.244142532348633,27.238412857055664,27.204034805297852,27.204034805297852,27.118093490600586,27.112361907958984,27.032148361206055,27.032148361206055,27.043607711791992,27.037878036499023,27.032148361206055,27.032148361206055,27.335817337036133,27.645212173461914,27.645212173461914,27.645212173461914,null,28.602052688598633,28.602052688598633,28.630701065063477,28.630701065063477,28.693727493286133,28.699453353881836,28.716646194458008,28.751022338867188,28.773941040039062,28.814046859741211,28.831235885620117,28.842697143554688,28.859884262084961,28.825506210327148,28.819778442382812,28.819778442382812,28.808317184448242,28.785398483276367,28.773941040039062,28.773941040039062,28.768209457397461,28.773941040039062,28.785398483276367,28.802587509155273,28.808317184448242,28.802587509155273,28.785398483276367,28.773941040039062,28.739564895629883,28.716646194458008,28.693727493286133,28.653619766235352,28.602052688598633,28.602052688598633],"text":"Crime:  56","type":"scatter","mode":"lines","line":{"width":0.75590551181102372,"color":"rgba(255,255,255,1)","dash":"solid"},"fill":"toself","fillcolor":"rgba(156,46,125,1)","hoveron":"fills","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[-82.059013366699219,-82.059013366699219,-81.566268920898438,-81.560539245605469,-82.059013366699219,-82.059013366699219],"y":[27.335817337036133,27.645212173461914,27.645212173461914,27.335817337036133,27.335817337036133,27.335817337036133],"text":"Crime:  57","type":"scatter","mode":"lines","line":{"width":0.75590551181102372,"color":"rgba(255,255,255,1)","dash":"solid"},"fill":"toself","fillcolor":"rgba(160,48,124,1)","hoveron":"fills","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[-80.33441162109375,-80.328681945800781,-80.328681945800781,-80.311492919921875,-80.271385192871094,-80.242744445800781,-80.214088439941406,-80.28857421875,-80.28857421875,-80.672454833984375,-80.672454833984375,-80.33441162109375,-80.33441162109375,null,-82.213714599609375,-82.213714599609375,-82.053291320800781,-82.053291320800781,-82.271011352539062,-82.271011352539062,-82.345489501953125,-82.362686157226562,-82.385597229003906,-82.408523559570312,-82.425704956054688,-82.465812683105469,-82.477272033691406,-82.477272033691406,-82.471542358398438,-82.483001708984375,-82.517379760742188,-82.546035766601562,-82.563217163085938,-82.563217163085938,-82.437164306640625,-82.431434631347656,-82.276741027832031,-82.271011352539062,-82.213714599609375,-82.213714599609375,null,null,null],"y":[27.547811508178711,27.50770378112793,27.467597961425781,27.433219909667969,27.353006362915039,27.295709609985352,27.25560188293457,27.25560188293457,27.204034805297852,27.204034805297852,27.553539276123047,27.547811508178711,27.547811508178711,null,27.198307037353516,27.100902557373047,27.100902557373047,27.032148361206055,27.037878036499023,26.940475463867188,26.940475463867188,26.951934814453125,26.969123840332031,26.997770309448242,27.032148361206055,27.077985763549805,27.100902557373047,27.118093490600586,27.152469635009766,27.181118011474609,27.226953506469727,27.30143928527832,27.347274780273438,27.387382507324219,27.387382507324219,27.38165283203125,27.38165283203125,27.209766387939453,27.198307037353516,27.198307037353516,null,null,null],"text":"Crime:  58","type":"scatter","mode":"lines","line":{"width":0.75590551181102372,"color":"rgba(255,255,255,1)","dash":"solid"},"fill":"toself","fillcolor":"rgba(163,49,123,1)","hoveron":"fills","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[-82.081932067871094,-81.571998596191406,-81.571998596191406,-81.571998596191406,-81.669403076171875,-81.669403076171875,-81.818374633789062,-81.818374633789062,-81.852745056152344,-81.852745056152344,-81.852745056152344,-81.87567138671875,-81.87567138671875,-81.87567138671875,-81.887130737304688,-81.915779113769531,-81.932960510253906,-81.96734619140625,-81.990257263183594,-82.007453918457031,-82.007453918457031,-81.984527587890625,-81.990257263183594,-82.018905639648438,-82.047561645507812,-82.059013366699219,-82.064743041992188,-82.064743041992188,-82.076202392578125,-82.093399047851562,-82.09912109375,-82.093399047851562,-82.081932067871094,-82.081932067871094],"y":[26.762857437133789,26.762857437133789,26.510757446289062,26.4305419921875,26.424814224243164,26.315952301025391,26.315952301025391,26.333139419555664,26.327411651611328,26.373247146606445,26.39616584777832,26.413354873657227,26.4305419921875,26.453460693359375,26.453460693359375,26.442001342773438,26.447732925415039,26.487838745117188,26.487838745117188,26.510757446289062,26.522216796875,26.539405822753906,26.550865173339844,26.550865173339844,26.550865173339844,26.562324523925781,26.585241317749023,26.625349044799805,26.648265838623047,26.665456771850586,26.688373565673828,26.734210968017578,26.762857437133789,26.762857437133789],"text":"Crime:  59","type":"scatter","mode":"lines","line":{"width":0.75590551181102372,"color":"rgba(255,255,255,1)","dash":"solid"},"fill":"toself","fillcolor":"rgba(166,50,122,1)","hoveron":"fills","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[-80.953208923339844,-80.936019897460938,-80.907371520996094,-80.890182495117188,-80.872993469238281,-80.890182495117188,-80.918830871582031,-80.941749572753906,-80.947471618652344,-80.947471618652344,-81.445945739746094,-81.451683044433594,-81.480323791503906,-81.480323791503906,-81.571998596191406,-81.566268920898438,-81.360008239746094,-81.360008239746094,-81.337089538574219,-81.337089538574219,-81.279792785644531,-81.279792785644531,-81.170928955078125,-81.165199279785156,-80.953208923339844,-80.953208923339844,null,-81.635032653808594,-81.646484375,-81.675132751464844,-81.675132751464844,-81.663673400878906,-81.652214050292969,-81.537620544433594,-81.445945739746094,-81.42303466796875,-81.417304992675781,-81.159469604492188,-81.153739929199219,-81.107902526855469,-81.084983825683594,-81.084983825683594,-80.993309020996094,-80.97039794921875,-80.958938598632812,-80.958938598632812,-80.947471618652344,-80.930290222167969,-80.907371520996094,-80.901634216308594,-80.901634216308594,-80.855804443359375,-80.78704833984375,-80.758399963378906,-80.764129638671875,-80.781318664550781,-80.827156066894531,-80.844345092773438,-80.850074768066406,-80.941749572753906,-80.947471618652344,-80.981857299804688,-80.987579345703125,-81.010505676269531,-81.021965026855469,-81.044883728027344,-81.044883728027344,-81.050613403320312,-81.079254150390625,-81.096450805664062,-81.107902526855469,-81.107902526855469,-81.113632202148438,-81.159469604492188,-81.165199279785156,-81.176658630371094,-81.199577331542969,-81.216766357421875,-81.245414733886719,-81.314170837402344,-81.33135986328125,-81.342819213867188,-81.337089538574219,-81.348548889160156,-81.354270935058594,-81.365737915039062,-81.405845642089844,-81.434494018554688,-81.445945739746094,-81.463142395019531,-81.474601745605469,-81.486053466796875,-81.520431518554688,-81.549087524414062,-81.560539245605469,-81.571998596191406,-81.594924926757812,-81.600654602050781,-81.617835998535156,-81.635032653808594,-81.635032653808594],"y":[27.204034805297852,27.192575454711914,27.186847686767578,27.175388336181641,27.152469635009766,27.135280609130859,27.123821258544922,27.100902557373047,26.768589019775391,26.757129669189453,26.762857437133789,26.768589019775391,26.774316787719727,26.762857437133789,26.762857437133789,27.032148361206055,27.032148361206055,27.037878036499023,27.043607711791992,27.032148361206055,27.032148361206055,27.112361907958984,27.118093490600586,27.204034805297852,27.204034805297852,27.204034805297852,null,29.255224227905273,29.283872604370117,29.306791305541992,29.323980331420898,29.329710006713867,29.318248748779297,29.352628707885742,29.381275177001953,29.392736434936523,29.260953903198242,29.260953903198242,29.409923553466797,29.432842254638672,29.381275177001953,29.358356475830078,29.203659057617188,29.163551330566406,29.117713928222656,29.060419082641602,29.054689407348633,29.054689407348633,29.043231964111328,29.014581680297852,28.968744277954102,28.894262313842773,28.808317184448242,28.762479782104492,28.745290756225586,28.745290756225586,28.785398483276367,28.785398483276367,28.773941040039062,28.773941040039062,28.596323013305664,28.602052688598633,28.653619766235352,28.693727493286133,28.716646194458008,28.739564895629883,28.773941040039062,28.785398483276367,28.802587509155273,28.808317184448242,28.802587509155273,28.785398483276367,28.773941040039062,28.768209457397461,28.773941040039062,28.773941040039062,28.785398483276367,28.808317184448242,28.819778442382812,28.819778442382812,28.825506210327148,28.859884262084961,28.911449432373047,28.922910690307617,28.957286834716797,29.008852005004883,29.014581680297852,29.037500381469727,29.060419082641602,29.083337783813477,29.083337783813477,29.094795227050781,29.146364212036133,29.175008773803711,29.186470031738281,29.197927474975586,29.197927474975586,29.203659057617188,29.215116500854492,29.255224227905273,29.255224227905273],"text":"Crime:  62","type":"scatter","mode":"lines","line":{"width":0.75590551181102372,"color":"rgba(255,255,255,1)","dash":"solid"},"fill":"toself","fillcolor":"rgba(176,54,119,1)","hoveron":"fills","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[-85.40509033203125,-85.410820007324219,-85.450927734375,-85.485305786132812,-85.508224487304688,-85.525405883789062,-85.525405883789062,-85.685836791992188,-85.691566467285156,-85.691566467285156,-85.674385070800781,-85.63427734375,-85.519676208496094,-85.502494812011719,-85.49676513671875,-85.513946533203125,-85.525405883789062,-85.548332214355469,-85.565513610839844,-85.594161987304688,-85.617080688476562,-85.657188415527344,-85.680107116699219,-85.703025817871094,-85.731674194335938,-85.703025817871094,-85.703025817871094,-85.685836791992188,-85.685836791992188,-85.697296142578125,-85.72021484375,-85.731674194335938,-85.743133544921875,-85.754592895507812,-85.777511596679688,-85.806159973144531,-85.823348999023438,-85.846267700195312,-85.869186401367188,-85.869186401367188,-85.851997375488281,-85.829078674316406,-85.800430297851562,-85.783241271972656,-85.783241271972656,-85.777511596679688,-85.754592895507812,-85.754592895507812,-85.754592895507812,-85.748863220214844,-85.754592895507812,-85.777511596679688,-85.874916076660156,-85.94940185546875,-85.989509582519531,-85.989509582519531,-85.966583251953125,-85.937942504882812,-85.915023803710938,-85.897834777832031,-85.874916076660156,-85.508224487304688,-85.502494812011719,-85.450927734375,-85.399360656738281,-85.40509033203125,-85.40509033203125,null,-80.947471618652344,-80.941749572753906,-80.850074768066406,-80.815696716308594,-80.781318664550781,-80.718292236328125,-80.643814086914062,-80.592247009277344,-80.523490905761719,-80.477653503417969,-80.512031555175781,-80.872993469238281,-80.861534118652344,-80.867263793945312,-80.890182495117188,-80.884452819824219,-80.884452819824219,-80.872993469238281,-80.87872314453125,-80.936019897460938,-80.941749572753906,-80.930290222167969,-80.947471618652344,-80.947471618652344,null,-81.663673400878906,-81.675132751464844,-81.675132751464844,-81.646484375,-81.635032653808594,-81.640762329101562,-81.652214050292969,-81.657943725585938,-81.663673400878906,-81.944419860839844,-82.293930053710938,-82.322578430175781,-82.425704956054688,-82.465812683105469,-82.505928039550781,-82.523109436035156,-82.523109436035156,-82.408523559570312,-82.408523559570312,-82.213714599609375,-82.1907958984375,-82.1907958984375,-82.202255249023438,-82.213714599609375,-82.196525573730469,-82.173606872558594,-82.127769470214844,-82.104850769042969,-82.087661743164062,-82.076202392578125,-82.047561645507812,-82.047561645507812,-82.030364990234375,-82.018905639648438,-81.835563659667969,-81.835563659667969,-81.78399658203125,-81.78399658203125,-81.749618530273438,-81.749618530273438,-81.680870056152344,-81.657943725585938,-81.663673400878906,-81.663673400878906],"y":[30.217794418334961,29.965692520141602,29.971424102783203,29.982881546020508,29.994342803955078,30.005800247192383,30.034448623657227,30.114662170410156,30.131851196289062,30.143308639526367,30.143308639526367,30.131851196289062,30.074556350708008,30.074556350708008,30.086013793945312,30.103200912475586,30.149038314819336,30.154769897460938,30.154769897460938,30.143308639526367,30.149038314819336,30.171957015991211,30.171957015991211,30.183414459228516,30.212064743041992,30.229251861572266,30.252170562744141,30.263629913330078,30.275089263916016,30.275089263916016,30.269359588623047,30.269359588623047,30.280820846557617,30.315196990966797,30.326654434204102,30.326654434204102,30.303739547729492,30.298007965087891,30.275089263916016,30.257902145385742,30.246440887451172,30.246440887451172,30.269359588623047,30.269359588623047,30.252170562744141,30.240713119506836,30.240713119506836,30.229251861572266,30.206333160400391,30.154769897460938,30.149038314819336,30.154769897460938,30.223522186279297,30.263629913330078,30.286548614501953,30.401142120361328,30.424060821533203,30.424060821533203,30.424060821533203,30.435518264770508,30.452705383300781,30.452705383300781,30.573026657104492,30.573026657104492,30.573026657104492,30.217794418334961,30.217794418334961,null,28.596323013305664,28.773941040039062,28.773941040039062,28.653619766235352,28.533298492431641,28.338493347167969,28.166604995727539,28.069202423095703,27.925962448120117,27.851478576660156,27.805641174316406,27.811370849609375,28.332763671875,28.36713981628418,28.41297721862793,28.435895919799805,28.453084945678711,28.470272064208984,28.487462997436523,28.521839141845703,28.544757843017578,28.556217193603516,28.596323013305664,28.596323013305664,null,29.329710006713867,29.323980331420898,29.306791305541992,29.283872604370117,29.255224227905273,29.043231964111328,29.043231964111328,28.951557159423828,28.945829391479492,28.951557159423828,28.951557159423828,28.974475860595703,29.014581680297852,29.043231964111328,29.048961639404297,29.043231964111328,29.215116500854492,29.220846176147461,29.478679656982422,29.478679656982422,29.467218399047852,29.455760955810547,29.461488723754883,29.450031280517578,29.421380996704102,29.421380996704102,29.432842254638672,29.432842254638672,29.421380996704102,29.432842254638672,29.444299697875977,29.455760955810547,29.467218399047852,29.495868682861328,29.513055801391602,29.478679656982422,29.478679656982422,29.421380996704102,29.421380996704102,29.364086151123047,29.364086151123047,29.341167449951172,29.329710006713867,29.329710006713867],"text":"Crime:  64","type":"scatter","mode":"lines","line":{"width":0.75590551181102372,"color":"rgba(255,255,255,1)","dash":"solid"},"fill":"toself","fillcolor":"rgba(182,56,117,1)","hoveron":"fills","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[-82.706459045410156,-82.603324890136719,-82.460090637207031,-82.460090637207031,-82.454360961914062,-82.471542358398438,-82.511650085449219,-82.523109436035156,-82.540298461914062,-82.5517578125,-82.563217163085938,-82.568946838378906,-82.540298461914062,-82.523109436035156,-82.540298461914062,-82.568946838378906,-82.580406188964844,-82.580406188964844,-82.59759521484375,-82.620513916015625,-82.637702941894531,-82.660621643066406,-82.68927001953125,-82.717910766601562,-82.752296447753906,-82.752296447753906,-82.786674499511719,-82.798126220703125,-82.792404174804688,-82.746566772460938,-82.752296447753906,-82.792404174804688,-82.792404174804688,-82.792404174804688,-82.758018493652344,-82.735107421875,-82.706459045410156,-82.672073364257812,-82.637702941894531,-82.637702941894531,-82.706459045410156,-82.723648071289062,-82.706459045410156,-82.706459045410156,null,null,null],"y":[30.590217590332031,30.584487915039062,30.573026657104492,30.137580871582031,30.114662170410156,30.086013793945312,30.074556350708008,30.068824768066406,30.045906066894531,30.017257690429688,30.005800247192383,29.982881546020508,29.959962844848633,29.937044143676758,29.925586700439453,29.925586700439453,29.914125442504883,29.879749298095703,29.851102828979492,29.845371246337891,29.816722869873047,29.816722869873047,29.822452545166016,29.839641571044922,29.862560272216797,29.879749298095703,29.925586700439453,29.931316375732422,29.948505401611328,29.977149963378906,29.988611221313477,29.982881546020508,30.114662170410156,30.309467315673828,30.303739547729492,30.303739547729492,30.320926666259766,30.343845367431641,30.378223419189453,30.412599563598633,30.498542785644531,30.538650512695312,30.590217590332031,30.590217590332031,null,null,null],"text":"Crime:  69","type":"scatter","mode":"lines","line":{"width":0.75590551181102372,"color":"rgba(255,255,255,1)","dash":"solid"},"fill":"toself","fillcolor":"rgba(198,63,112,1)","hoveron":"fills","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[-87.605247497558594,-87.181259155273438,-87.221366882324219,-87.255744934082031,-87.278663635253906,-87.313041687011719,-87.313041687011719,-87.30731201171875,-87.324493408203125,-87.324493408203125,-87.313041687011719,-87.295845031738281,-87.290115356445312,-87.278663635253906,-87.244277954101562,-87.227096557617188,-87.198448181152344,-87.186988830566406,-87.175529479980469,-87.181259155273438,-87.198448181152344,-87.221366882324219,-87.261474609375,-87.295845031738281,-87.30731201171875,-87.313041687011719,-87.318771362304688,-87.335952758789062,-87.381790161132812,-87.393257141113281,-87.404716491699219,-87.410438537597656,-87.439094543457031,-87.490653991699219,-87.507843017578125,-87.513572692871094,-87.513572692871094,-87.467735290527344,-87.462005615234375,-87.462005615234375,-87.450546264648438,-87.439094543457031,-87.439094543457031,-87.421897888183594,-87.404716491699219,-87.393257141113281,-87.39898681640625,-87.44482421875,-87.462005615234375,-87.467735290527344,-87.462005615234375,-87.433357238769531,-87.410438537597656,-87.410438537597656,-87.421897888183594,-87.450546264648438,-87.462005615234375,-87.490653991699219,-87.547950744628906,-87.610969543457031,-87.633895874023438,-87.639625549316406,-87.633895874023438,-87.610969543457031,-87.605247497558594,-87.605247497558594,-87.605247497558594,null,-82.654891967773438,-82.660621643066406,-82.677810668945312,-82.683540344238281,-82.694999694824219,-82.700729370117188,-82.706459045410156,-82.706459045410156,-82.717910766601562,-82.729377746582031,-82.729377746582031,-82.717910766601562,-82.672073364257812,-82.654891967773438,-82.631973266601562,-82.626243591308594,-82.637702941894531,-82.637702941894531,-82.631973266601562,-82.631973266601562,-82.637702941894531,-82.637702941894531,-82.637702941894531,-82.6434326171875,-82.660621643066406,-82.683540344238281,-82.694999694824219,-82.700729370117188,-82.717910766601562,-82.735107421875,-82.752296447753906,-82.758018493652344,-82.769485473632812,-82.775215148925781,-82.786674499511719,-82.803855895996094,-82.809585571289062,-82.821052551269531,-82.8267822265625,-82.843963623046875,-82.849693298339844,-82.849693298339844,-82.832511901855469,-82.803855895996094,-82.786674499511719,-82.786674499511719,-82.786674499511719,-82.798126220703125,-82.654891967773438,-82.654891967773438,-82.654891967773438],"y":[31.008474349975586,31.008474349975586,30.979829788208008,30.968368530273438,30.945449829101562,30.893884658813477,30.865236282348633,30.836589813232422,30.802209854125977,30.756376266479492,30.721996307373047,30.721996307373047,30.704807281494141,30.647512435913086,30.595945358276367,30.573026657104492,30.567298889160156,30.550111770629883,30.515731811523438,30.487085342407227,30.458436965942383,30.441247940063477,30.424060821533203,30.401142120361328,30.401142120361328,30.383953094482422,30.372491836547852,30.372491836547852,30.366762161254883,30.361034393310547,30.343845367431641,30.338115692138672,30.332386016845703,30.315196990966797,30.315196990966797,30.326654434204102,30.332386016845703,30.355304718017578,30.361034393310547,30.389680862426758,30.401142120361328,30.418329238891602,30.424060821533203,30.429786682128906,30.429786682128906,30.446979522705078,30.458436965942383,30.492813110351562,30.510004043579102,30.527193069458008,30.544380187988281,30.584487915039062,30.618864059448242,30.647512435913086,30.676158905029297,30.699077606201172,30.710538864135742,30.721996307373047,30.773563385009766,30.842317581176758,30.859508514404297,30.876697540283203,30.899616241455078,30.933992385864258,30.956911087036133,31.008474349975586,31.008474349975586,null,28.011907577514648,28.011907577514648,28.023366928100586,28.040554046630859,28.046283721923828,28.040554046630859,28.000448226928711,27.977529525756836,27.966070175170898,27.96034049987793,27.937421798706055,27.931694030761719,27.920234680175781,27.891584396362305,27.885856628417969,27.874397277832031,27.862937927246094,27.857208251953125,27.83428955078125,27.805641174316406,27.788454055786133,27.776994705200195,27.748344421386719,27.725427627563477,27.719697952270508,27.719697952270508,27.731157302856445,27.742616653442383,27.748344421386719,27.75407600402832,27.765535354614258,27.776994705200195,27.83428955078125,27.845748901367188,27.851478576660156,27.851478576660156,27.83428955078125,27.83428955078125,27.840019226074219,27.868667602539062,27.903043746948242,27.925962448120117,27.96034049987793,28.011907577514648,28.052013397216797,28.092121124267578,28.126499176025391,28.172334671020508,28.166604995727539,28.011907577514648,28.011907577514648],"text":"Crime:  70","type":"scatter","mode":"lines","line":{"width":0.75590551181102372,"color":"rgba(255,255,255,1)","dash":"solid"},"fill":"toself","fillcolor":"rgba(201,64,111,1)","hoveron":"fills","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[-83.313796997070312,-83.32525634765625,-83.319526672363281,-83.330978393554688,-83.348167419433594,-83.353897094726562,-83.37109375,-83.411201477050781,-83.451309204101562,-83.485679626464844,-83.491409301757812,-83.508598327636719,-83.525787353515625,-83.5487060546875,-83.565895080566406,-83.59454345703125,-83.600273132324219,-83.600273132324219,-83.583084106445312,-83.577346801757812,-83.59454345703125,-83.623184204101562,-83.657569885253906,-83.697677612304688,-83.743507385253906,-83.77789306640625,-83.812271118164062,-83.829452514648438,-83.944046020507812,-83.984153747558594,-83.972694396972656,-83.966964721679688,-83.95550537109375,-83.938316345214844,-83.915397644042969,-83.90966796875,-83.881019592285156,-83.846641540527344,-83.812271118164062,-83.468490600585938,-83.468490600585938,-83.37109375,-83.376815795898438,-83.365364074707031,-83.365364074707031,-83.313796997070312,-83.313796997070312],"y":[29.822452545166016,29.788076400756836,29.765157699584961,29.747970581054688,29.725051879882812,29.696401596069336,29.673482894897461,29.673482894897461,29.684944152832031,29.696401596069336,29.725051879882812,29.730777740478516,29.725051879882812,29.730777740478516,29.765157699584961,29.776615142822266,29.793804168701172,29.810993194580078,29.822452545166016,29.833911895751953,29.851102828979492,29.862560272216797,29.896936416625977,29.937044143676758,29.959962844848633,29.988611221313477,29.988611221313477,29.994342803955078,30.080282211303711,30.103200912475586,30.137580871582031,30.160499572753906,30.183414459228516,30.189146041870117,30.206333160400391,30.240713119506836,30.269359588623047,30.275089263916016,30.303739547729492,30.303739547729492,30.257902145385742,30.257902145385742,29.908397674560547,29.908397674560547,29.822452545166016,29.822452545166016,29.822452545166016],"text":"Crime:  76","type":"scatter","mode":"lines","line":{"width":0.75590551181102372,"color":"rgba(255,255,255,1)","dash":"solid"},"fill":"toself","fillcolor":"rgba(220,72,105,1)","hoveron":"fills","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[-80.867263793945312,-81.130821228027344,-81.125091552734375,-81.136558532714844,-81.165199279785156,-81.165199279785156,-81.176658630371094,-81.216766357421875,-81.251144409179688,-81.274063110351562,-81.296981811523438,-81.296981811523438,-81.33135986328125,-81.337089538574219,-81.360008239746094,-81.382926940917969,-81.382926940917969,-81.365737915039062,-81.360008239746094,-81.360008239746094,-81.382926940917969,-81.371467590332031,-81.4688720703125,-81.577728271484375,-81.640762329101562,-81.640762329101562,-80.861534118652344,-80.872993469238281,-80.87872314453125,-80.884452819824219,-80.867263793945312,-80.867263793945312,-80.867263793945312],"y":[27.639484405517578,27.645212173461914,27.673862457275391,27.713968276977539,27.736886978149414,27.759803771972656,27.782722473144531,27.822830200195312,27.840019226074219,27.851478576660156,27.885856628417969,27.903043746948242,27.925962448120117,27.943151473999023,27.96034049987793,27.966070175170898,27.977529525756836,27.988988876342773,28.006175994873047,28.011907577514648,28.057743072509766,28.074932098388672,28.069202423095703,28.252548217773438,28.252548217773438,28.338493347167969,28.332763671875,27.811370849609375,27.805641174316406,27.725427627563477,27.719697952270508,27.639484405517578,27.639484405517578],"text":"Crime:  78","type":"scatter","mode":"lines","line":{"width":0.75590551181102372,"color":"rgba(255,255,255,1)","dash":"solid"},"fill":"toself","fillcolor":"rgba(224,78,104,1)","hoveron":"fills","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[-82.213714599609375,-82.271011352539062,-82.276741027832031,-82.431434631347656,-82.437164306640625,-82.563217163085938,-82.568946838378906,-82.603324890136719,-82.626243591308594,-82.672073364257812,-82.677810668945312,-82.666351318359375,-82.660621643066406,-82.654891967773438,-82.631973266601562,-82.586135864257812,-82.580406188964844,-82.586135864257812,-82.591865539550781,-82.59759521484375,-82.591865539550781,-82.568946838378906,-82.563217163085938,-82.059013366699219,-82.059013366699219,-82.059013366699219,-82.156417846679688,-82.156417846679688,-82.213714599609375,-82.213714599609375],"y":[27.198307037353516,27.209766387939453,27.38165283203125,27.38165283203125,27.387382507324219,27.387382507324219,27.410301208496094,27.433219909667969,27.450407028198242,27.46186637878418,27.473325729370117,27.513433456420898,27.530622482299805,27.530622482299805,27.530622482299805,27.524892807006836,27.536352157592773,27.576457977294922,27.582189559936523,27.593647003173828,27.605106353759766,27.622295379638672,27.645212173461914,27.645212173461914,27.335817337036133,27.249872207641602,27.244142532348633,27.204034805297852,27.198307037353516,27.198307037353516],"text":"Crime:  79","type":"scatter","mode":"lines","line":{"width":0.75590551181102372,"color":"rgba(255,255,255,1)","dash":"solid"},"fill":"toself","fillcolor":"rgba(225,82,105,1)","hoveron":"fills","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[-81.663673400878906,-81.657943725585938,-81.680870056152344,-81.749618530273438,-81.749618530273438,-81.78399658203125,-81.78399658203125,-81.835563659667969,-81.835563659667969,-82.018905639648438,-82.036094665527344,-82.053291320800781,-82.047561645507812,-82.013175964355469,-81.990257263183594,-81.944419860839844,-81.932960510253906,-81.9215087890625,-81.892852783203125,-81.847023010253906,-81.806915283203125,-81.571998596191406,-81.531890869140625,-81.526161193847656,-81.526161193847656,-81.526161193847656,-81.503250122070312,-81.486053466796875,-81.480323791503906,-81.457412719726562,-81.42303466796875,-81.445945739746094,-81.537620544433594,-81.652214050292969,-81.663673400878906,-81.663673400878906],"y":[29.329710006713867,29.341167449951172,29.364086151123047,29.364086151123047,29.421380996704102,29.421380996704102,29.478679656982422,29.478679656982422,29.513055801391602,29.495868682861328,29.478679656982422,29.472949981689453,29.719320297241211,29.742238998413086,29.742238998413086,29.742238998413086,29.753696441650391,29.776615142822266,29.788076400756836,29.799533843994141,29.822452545166016,29.822452545166016,29.765157699584961,29.753696441650391,29.621919631958008,29.495868682861328,29.472949981689453,29.455760955810547,29.409923553466797,29.392736434936523,29.392736434936523,29.381275177001953,29.352628707885742,29.318248748779297,29.329710006713867,29.329710006713867],"text":"Crime:  83","type":"scatter","mode":"lines","line":{"width":0.75590551181102372,"color":"rgba(255,255,255,1)","dash":"solid"},"fill":"toself","fillcolor":"rgba(230,96,106,1)","hoveron":"fills","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[-81.950149536132812,-81.864212036132812,-81.864212036132812,-81.795455932617188,-81.789726257324219,-81.640762329101562,-81.640762329101562,-81.577728271484375,-81.4688720703125,-81.371467590332031,-81.382926940917969,-81.360008239746094,-81.360008239746094,-81.365737915039062,-81.382926940917969,-81.382926940917969,-81.360008239746094,-81.337089538574219,-81.33135986328125,-81.296981811523438,-81.296981811523438,-81.274063110351562,-81.251144409179688,-81.216766357421875,-81.176658630371094,-81.165199279785156,-81.165199279785156,-81.136558532714844,-81.125091552734375,-81.130821228027344,-81.566268920898438,-82.059013366699219,-82.059013366699219,-82.104850769042969,-82.104850769042969,-82.059013366699219,-82.059013366699219,-82.041824340820312,-82.030364990234375,-82.018905639648438,-82.001724243164062,-81.973068237304688,-81.950149536132812,-81.950149536132812,-81.950149536132812,-81.950149536132812],"y":[28.338493347167969,28.338493347167969,28.355680465698242,28.349952697753906,28.344223022460938,28.338493347167969,28.252548217773438,28.252548217773438,28.069202423095703,28.074932098388672,28.057743072509766,28.011907577514648,28.006175994873047,27.988988876342773,27.977529525756836,27.966070175170898,27.96034049987793,27.943151473999023,27.925962448120117,27.903043746948242,27.885856628417969,27.851478576660156,27.840019226074219,27.822830200195312,27.782722473144531,27.759803771972656,27.736886978149414,27.713968276977539,27.673862457275391,27.645212173461914,27.645212173461914,27.645212173461914,28.166604995727539,28.172334671020508,28.246818542480469,28.252548217773438,28.304115295410156,28.304115295410156,28.315574645996094,28.315574645996094,28.315574645996094,28.304115295410156,28.309844970703125,28.315574645996094,28.338493347167969,28.338493347167969],"text":"Crime:  84","type":"scatter","mode":"lines","line":{"width":0.75590551181102372,"color":"rgba(255,255,255,1)","dash":"solid"},"fill":"toself","fillcolor":"rgba(232,100,106,1)","hoveron":"fills","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[-81.382926940917969,-80.890182495117188,-80.895912170410156,-80.947471618652344,-80.964668273925781,-80.993309020996094,-81.044883728027344,-81.084983825683594,-81.107902526855469,-81.130821228027344,-81.165199279785156,-81.176658630371094,-81.182395935058594,-81.176658630371094,-81.165199279785156,-81.142288208007812,-81.119361877441406,-81.102180480957031,-81.079254150390625,-81.050613403320312,-81.021965026855469,-80.993309020996094,-80.958938598632812,-80.936019897460938,-80.924560546875,-80.930290222167969,-80.924560546875,-80.918830871582031,-80.918830871582031,-80.930290222167969,-80.964668273925781,-80.981857299804688,-80.987579345703125,-80.999046325683594,-81.0162353515625,-81.021965026855469,-81.06207275390625,-81.073524475097656,-81.102180480957031,-81.113632202148438,-81.153739929199219,-81.170928955078125,-81.176658630371094,-81.19384765625,-81.216766357421875,-81.222496032714844,-81.211036682128906,-81.216766357421875,-81.245414733886719,-81.251144409179688,-81.2855224609375,-81.314170837402344,-81.33135986328125,-81.360008239746094,-81.382926940917969,-81.382926940917969],"y":[25.800289154052734,25.794559478759766,25.181495666503906,25.147117614746094,25.141387939453125,25.135658264160156,25.141387939453125,25.129928588867188,25.135658264160156,25.158576965332031,25.204414367675781,25.238790512084961,25.267438888549805,25.301815032958984,25.319005966186523,25.324733734130859,25.319005966186523,25.301815032958984,25.273168563842773,25.24452018737793,25.233060836791992,25.221601486206055,25.233060836791992,25.24452018737793,25.255979537963867,25.278896331787109,25.296087265014648,25.313274383544922,25.324733734130859,25.330463409423828,25.324733734130859,25.324733734130859,25.330463409423828,25.353382110595703,25.359111785888672,25.359111785888672,25.382030487060547,25.382030487060547,25.376300811767578,25.382030487060547,25.399219512939453,25.422136306762695,25.473703384399414,25.49089241027832,25.513811111450195,25.5252685546875,25.548187255859375,25.559646606445312,25.57110595703125,25.588294982910156,25.657051086425781,25.685697555541992,25.702886581420898,25.765911102294922,25.800289154052734,25.800289154052734],"text":"Crime:  89","type":"scatter","mode":"lines","line":{"width":0.75590551181102372,"color":"rgba(255,255,255,1)","dash":"solid"},"fill":"toself","fillcolor":"rgba(238,117,107,1)","hoveron":"fills","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[null,null],"y":[null,null],"text":"Crime:  90","type":"scatter","mode":"lines","line":{"width":0.75590551181102372,"color":"rgba(255,255,255,1)","dash":"solid"},"fill":"toself","fillcolor":"rgba(239,120,107,1)","hoveron":"fills","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[-81.640762329101562,-81.640762329101562,-81.617835998535156,-81.600654602050781,-81.612106323242188,-81.640762329101562,-81.635032653808594,-81.394386291503906,-81.400108337402344,-81.411575317382812,-81.434494018554688,-81.445945739746094,-81.445945739746094,-81.319900512695312,-81.314170837402344,-80.981857299804688,-80.947471618652344,-80.930290222167969,-80.941749572753906,-80.936019897460938,-80.87872314453125,-80.872993469238281,-80.884452819824219,-80.884452819824219,-80.890182495117188,-80.867263793945312,-80.861534118652344,-81.640762329101562,-81.640762329101562],"y":[28.338493347167969,28.550485610961914,28.590595245361328,28.619241714477539,28.642160415649414,28.665077209472656,28.773941040039062,28.773941040039062,28.751022338867188,28.716646194458008,28.699453353881836,28.693727493286133,28.630701065063477,28.630701065063477,28.602052688598633,28.602052688598633,28.596323013305664,28.556217193603516,28.544757843017578,28.521839141845703,28.487462997436523,28.470272064208984,28.453084945678711,28.435895919799805,28.41297721862793,28.36713981628418,28.332763671875,28.338493347167969,28.338493347167969],"text":"Crime:  93","type":"scatter","mode":"lines","line":{"width":0.75590551181102372,"color":"rgba(255,255,255,1)","dash":"solid"},"fill":"toself","fillcolor":"rgba(243,130,108,1)","hoveron":"fills","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[-80.890182495117188,-80.884452819824219,-80.87872314453125,-80.088035583496094,-80.088035583496094,-80.099502563476562,-80.1109619140625,-80.122413635253906,-80.128143310546875,-80.128143310546875,-80.133872985839844,-80.300033569335938,-80.300033569335938,-80.689651489257812,-80.695381164550781,-80.890182495117188,-80.890182495117188],"y":[25.972177505493164,26.247196197509766,26.333139419555664,26.315952301025391,26.281574249267578,26.166982650756836,26.121147155761719,26.092496871948242,26.052391052246094,26.006555557250977,25.960718154907227,25.960718154907227,25.949258804321289,25.949258804321289,25.966447830200195,25.972177505493164,25.972177505493164],"text":"Crime:  94","type":"scatter","mode":"lines","line":{"width":0.75590551181102372,"color":"rgba(255,255,255,1)","dash":"solid"},"fill":"toself","fillcolor":"rgba(244,133,108,1)","hoveron":"fills","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[-82.041824340820312,-81.743888854980469,-81.720970153808594,-81.709510803222656,-81.680870056152344,-81.657943725585938,-81.640762329101562,-81.612106323242188,-81.600654602050781,-81.600654602050781,-81.600654602050781,-81.583457946777344,-81.566268920898438,-81.549087524414062,-81.531890869140625,-81.508979797363281,-81.503250122070312,-81.451683044433594,-81.451683044433594,-81.440216064453125,-81.434494018554688,-81.440216064453125,-81.457412719726562,-81.451683044433594,-81.440216064453125,-81.42303466796875,-81.400108337402344,-81.388656616210938,-81.371467590332031,-81.365737915039062,-81.428764343261719,-81.434494018554688,-81.531890869140625,-81.537620544433594,-81.554817199707031,-81.594924926757812,-81.623565673828125,-81.635032653808594,-81.663673400878906,-81.675132751464844,-81.669403076171875,-81.663673400878906,-82.036094665527344,-82.041824340820312,-82.041824340820312],"y":[30.263629913330078,30.510004043579102,30.538650512695312,30.561569213867188,30.555837631225586,30.550111770629883,30.567298889160156,30.573026657104492,30.573026657104492,30.555837631225586,30.550111770629883,30.550111770629883,30.538650512695312,30.532918930053711,30.515731811523438,30.515731811523438,30.532918930053711,30.532918930053711,30.515731811523438,30.487085342407227,30.458436965942383,30.412599563598633,30.389680862426758,30.372491836547852,30.366762161254883,30.372491836547852,30.389680862426758,30.383953094482422,30.320926666259766,30.246440887451172,30.246440887451172,30.086013793945312,30.086013793945312,30.091743469238281,30.097475051879883,30.114662170410156,30.114662170410156,30.114662170410156,30.114662170410156,30.131851196289062,30.154769897460938,30.171957015991211,30.171957015991211,30.263629913330078,30.263629913330078],"text":"Crime:  97","type":"scatter","mode":"lines","line":{"width":0.75590551181102372,"color":"rgba(255,255,255,1)","dash":"solid"},"fill":"toself","fillcolor":"rgba(248,142,108,1)","hoveron":"fills","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[-82.660621643066406,-82.637702941894531,-82.620513916015625,-82.59759521484375,-82.580406188964844,-82.580406188964844,-82.568946838378906,-82.540298461914062,-82.523109436035156,-82.425704956054688,-82.3741455078125,-82.345489501953125,-82.305381774902344,-82.282470703125,-82.225173950195312,-82.139228820800781,-82.122039794921875,-82.087661743164062,-82.047561645507812,-82.053291320800781,-82.036094665527344,-82.018905639648438,-82.030364990234375,-82.047561645507812,-82.047561645507812,-82.076202392578125,-82.087661743164062,-82.104850769042969,-82.127769470214844,-82.173606872558594,-82.196525573730469,-82.213714599609375,-82.202255249023438,-82.1907958984375,-82.1907958984375,-82.213714599609375,-82.408523559570312,-82.563217163085938,-82.563217163085938,-82.660621643066406,-82.666351318359375,-82.660621643066406,-82.660621643066406],"y":[29.816722869873047,29.816722869873047,29.845371246337891,29.851102828979492,29.879749298095703,29.914125442504883,29.925586700439453,29.925586700439453,29.937044143676758,29.914125442504883,29.874017715454102,29.868289947509766,29.839641571044922,29.839641571044922,29.839641571044922,29.822452545166016,29.822452545166016,29.747970581054688,29.719320297241211,29.472949981689453,29.478679656982422,29.495868682861328,29.467218399047852,29.455760955810547,29.444299697875977,29.432842254638672,29.421380996704102,29.432842254638672,29.432842254638672,29.421380996704102,29.421380996704102,29.450031280517578,29.461488723754883,29.455760955810547,29.467218399047852,29.478679656982422,29.478679656982422,29.490137100219727,29.535974502563477,29.547431945800781,29.570350646972656,29.816722869873047,29.816722869873047],"text":"Crime: 104","type":"scatter","mode":"lines","line":{"width":0.75590551181102372,"color":"rgba(255,255,255,1)","dash":"solid"},"fill":"toself","fillcolor":"rgba(255,165,114,1)","hoveron":"fills","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[-84.087287902832031,-84.012802124023438,-84.007072448730469,-83.961235046386719,-83.984153747558594,-84.007072448730469,-84.029983520507812,-84.029983520507812,-84.070098876953125,-84.075820922851562,-84.247711181640625,-84.247711181640625,-84.717544555664062,-84.711807250976562,-84.694618225097656,-84.671707153320312,-84.660240173339844,-84.6373291015625,-84.602951049804688,-84.545654296875,-84.448249816894531,-84.40814208984375,-84.390953063964844,-84.373764038085938,-84.3623046875,-84.322196960449219,-84.305007934570312,-84.310745239257812,-84.087287902832031,-84.087287902832031],"y":[30.676158905029297,30.670431137084961,30.613136291503906,30.550111770629883,30.515731811523438,30.515731811523438,30.527193069458008,30.446979522705078,30.441247940063477,30.275089263916016,30.275089263916016,30.309467315673828,30.303739547729492,30.326654434204102,30.355304718017578,30.372491836547852,30.395410537719727,30.401142120361328,30.412599563598633,30.441247940063477,30.458436965942383,30.487085342407227,30.532918930053711,30.567298889160156,30.590217590332031,30.613136291503906,30.641782760620117,30.687620162963867,30.676158905029297,30.676158905029297],"text":"Crime: 107","type":"scatter","mode":"lines","line":{"width":0.75590551181102372,"color":"rgba(255,255,255,1)","dash":"solid"},"fill":"toself","fillcolor":"rgba(255,176,123,1)","hoveron":"fills","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[null,null],"y":[null,null],"text":"Crime: 110","type":"scatter","mode":"lines","line":{"width":0.75590551181102372,"color":"rgba(255,255,255,1)","dash":"solid"},"fill":"toself","fillcolor":"rgba(255,187,133,1)","hoveron":"fills","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[null,null],"y":[null,null],"text":"Crime: 128","type":"scatter","mode":"lines","line":{"width":0.75590551181102372,"color":"rgba(255,255,255,1)","dash":"solid"},"fill":"toself","fillcolor":"rgba(252,253,191,1)","hoveron":"fills","showlegend":false,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[-88],"y":[25],"name":"ae8c2e2d423c0874316b4737ed4c8416","type":"scatter","mode":"markers","opacity":0,"hoverinfo":"skip","showlegend":false,"marker":{"color":[0,1],"colorscale":[[0,"#000004"],[0.0033444816053511705,"#020107"],[0.006688963210702341,"#04010A"],[0.010033444816053512,"#06020D"],[0.013377926421404682,"#08020F"],[0.016722408026755852,"#0A0311"],[0.020066889632107024,"#0C0413"],[0.023411371237458192,"#0D0415"],[0.026755852842809364,"#0F0517"],[0.030100334448160536,"#100618"],[0.033444816053511704,"#12061A"],[0.036789297658862873,"#13071B"],[0.040133779264214048,"#14071D"],[0.043478260869565216,"#15081E"],[0.046822742474916385,"#160920"],[0.05016722408026756,"#170921"],[0.053511705685618728,"#180A23"],[0.056856187290969896,"#180B24"],[0.060200668896321072,"#190B26"],[0.06354515050167224,"#1A0C28"],[0.066889632107023408,"#1A0C29"],[0.070234113712374577,"#1B0D2B"],[0.073578595317725745,"#1C0D2C"],[0.076923076923076927,"#1D0E2E"],[0.080267558528428096,"#1D0E30"],[0.083612040133779264,"#1E0E31"],[0.086956521739130432,"#1F0E33"],[0.090301003344481601,"#200E35"],[0.093645484949832769,"#210F36"],[0.096989966555183951,"#220F38"],[0.10033444816053512,"#220F3A"],[0.10367892976588629,"#230F3C"],[0.10702341137123746,"#240F3D"],[0.11036789297658862,"#250F3F"],[0.11371237458193979,"#260F41"],[0.11705685618729096,"#260F43"],[0.12040133779264214,"#270F44"],[0.12374581939799331,"#281046"],[0.12709030100334448,"#291048"],[0.13043478260869565,"#2A104A"],[0.13377926421404682,"#2B104B"],[0.13712374581939799,"#2B104D"],[0.14046822742474915,"#2C104F"],[0.14381270903010032,"#2D1051"],[0.14715719063545149,"#2E1053"],[0.15050167224080269,"#2F1054"],[0.15384615384615385,"#301056"],[0.15719063545150502,"#301058"],[0.16053511705685619,"#31105A"],[0.16387959866220736,"#32105C"],[0.16722408026755853,"#33105E"],[0.1705685618729097,"#34105F"],[0.17391304347826086,"#351061"],[0.17725752508361203,"#351063"],[0.1806020066889632,"#361065"],[0.18394648829431437,"#371067"],[0.18729096989966554,"#380F69"],[0.19063545150501671,"#390F6B"],[0.1939799331103679,"#3A0F6D"],[0.19732441471571907,"#3A0F6E"],[0.20066889632107024,"#3B0F70"],[0.20401337792642141,"#3D0F70"],[0.20735785953177258,"#3E1071"],[0.21070234113712374,"#401071"],[0.21404682274247491,"#421071"],[0.21739130434782608,"#431172"],[0.22073578595317725,"#451172"],[0.22408026755852842,"#461272"],[0.22742474916387959,"#471272"],[0.23076923076923075,"#491273"],[0.23411371237458192,"#4A1373"],[0.23745819397993312,"#4C1373"],[0.24080267558528429,"#4D1474"],[0.24414715719063546,"#4F1474"],[0.24749163879598662,"#501474"],[0.25083612040133779,"#521574"],[0.25418060200668896,"#531575"],[0.25752508361204013,"#541675"],[0.2608695652173913,"#561675"],[0.26421404682274247,"#571676"],[0.26755852842809363,"#581776"],[0.2709030100334448,"#5A1776"],[0.27424749163879597,"#5B1876"],[0.27759197324414714,"#5C1877"],[0.28093645484949831,"#5E1877"],[0.28428093645484948,"#5F1977"],[0.28762541806020064,"#611978"],[0.29096989966555181,"#621A78"],[0.29431438127090298,"#631A78"],[0.29765886287625415,"#651B78"],[0.30100334448160537,"#661B79"],[0.30434782608695654,"#671C79"],[0.30769230769230771,"#681C79"],[0.31103678929765888,"#6A1C7A"],[0.31438127090301005,"#6B1D7A"],[0.31772575250836121,"#6C1D7A"],[0.32107023411371238,"#6E1E7A"],[0.32441471571906355,"#6F1E7B"],[0.32775919732441472,"#701F7B"],[0.33110367892976589,"#721F7B"],[0.33444816053511706,"#73207B"],[0.33779264214046822,"#74207C"],[0.34113712374581939,"#75217C"],[0.34448160535117056,"#77217C"],[0.34782608695652173,"#78217D"],[0.3511705685618729,"#79227D"],[0.35451505016722407,"#7B227D"],[0.35785953177257523,"#7C237D"],[0.3612040133779264,"#7D237E"],[0.36454849498327757,"#7E247E"],[0.36789297658862874,"#80247E"],[0.37123745819397991,"#81257F"],[0.37458193979933108,"#82257F"],[0.37792642140468224,"#84267F"],[0.38127090301003341,"#85267F"],[0.38461538461538458,"#862780"],[0.38795986622073581,"#872780"],[0.39130434782608697,"#892880"],[0.39464882943143814,"#8A2881"],[0.39799331103678931,"#8B2981"],[0.40133779264214048,"#8D2981"],[0.40468227424749165,"#8E2A80"],[0.40802675585284282,"#902A80"],[0.41137123745819398,"#912B80"],[0.41471571906354515,"#932B7F"],[0.41806020066889632,"#942C7F"],[0.42140468227424749,"#952C7F"],[0.42474916387959866,"#972D7E"],[0.42809364548494983,"#982D7E"],[0.43143812709030099,"#9A2D7D"],[0.43478260869565216,"#9B2E7D"],[0.43812709030100333,"#9D2E7D"],[0.4414715719063545,"#9E2F7C"],[0.44481605351170567,"#9F2F7C"],[0.44816053511705684,"#A1307B"],[0.451505016722408,"#A2307B"],[0.45484949832775917,"#A4317B"],[0.45819397993311034,"#A5327A"],[0.46153846153846151,"#A6327A"],[0.46488294314381268,"#A83379"],[0.46822742474916385,"#A93379"],[0.47157190635451507,"#AB3479"],[0.47491638795986624,"#AC3478"],[0.47826086956521741,"#AD3578"],[0.48160535117056857,"#AF3577"],[0.48494983277591974,"#B03677"],[0.48829431438127091,"#B23677"],[0.49163879598662208,"#B33776"],[0.49498327759197325,"#B43776"],[0.49832775919732442,"#B63875"],[0.50167224080267558,"#B73875"],[0.50501672240802675,"#B83974"],[0.50836120401337792,"#BA3974"],[0.51170568561872909,"#BB3A74"],[0.51505016722408026,"#BC3B73"],[0.51839464882943143,"#BE3B73"],[0.52173913043478259,"#BF3C72"],[0.52508361204013376,"#C03C72"],[0.52842809364548493,"#C23D72"],[0.5317725752508361,"#C33D71"],[0.53511705685618727,"#C43E71"],[0.53846153846153844,"#C63E70"],[0.5418060200668896,"#C73F70"],[0.54515050167224077,"#C8406F"],[0.54849498327759194,"#CA406F"],[0.55183946488294311,"#CB416F"],[0.55518394648829428,"#CC416E"],[0.55852842809364545,"#CE426E"],[0.56187290969899661,"#CF426D"],[0.56521739130434778,"#D0436D"],[0.56856187290969895,"#D2446C"],[0.57190635451505012,"#D3446C"],[0.57525083612040129,"#D4456B"],[0.57859531772575246,"#D6456B"],[0.58193979933110362,"#D7466A"],[0.58528428093645479,"#D8466A"],[0.58862876254180596,"#DA476A"],[0.59197324414715713,"#DB4869"],[0.5953177257525083,"#DC4869"],[0.59866220735785947,"#DD4968"],[0.60200668896321075,"#DE4A68"],[0.60535117056856191,"#DF4C68"],[0.60869565217391308,"#E04D68"],[0.61204013377926425,"#E04F68"],[0.61538461538461542,"#E15169"],[0.61872909698996659,"#E15269"],[0.62207357859531776,"#E25469"],[0.62541806020066892,"#E25669"],[0.62876254180602009,"#E35769"],[0.63210702341137126,"#E45969"],[0.63545150501672243,"#E45A69"],[0.6387959866220736,"#E55C69"],[0.64214046822742477,"#E55D69"],[0.64548494983277593,"#E65F6A"],[0.6488294314381271,"#E6606A"],[0.65217391304347827,"#E7626A"],[0.65551839464882944,"#E7636A"],[0.65886287625418061,"#E8656A"],[0.66220735785953178,"#E9666A"],[0.66555183946488294,"#E9686A"],[0.66889632107023411,"#EA696A"],[0.67224080267558528,"#EA6B6A"],[0.67558528428093645,"#EB6C6A"],[0.67892976588628762,"#EB6E6B"],[0.68227424749163879,"#EC6F6B"],[0.68561872909698995,"#EC716B"],[0.68896321070234112,"#ED726B"],[0.69230769230769229,"#ED736B"],[0.69565217391304346,"#EE756B"],[0.69899665551839463,"#EF766B"],[0.7023411371237458,"#EF786B"],[0.70568561872909696,"#F0796B"],[0.70903010033444813,"#F07A6B"],[0.7123745819397993,"#F17C6B"],[0.71571906354515047,"#F17D6B"],[0.71906354515050164,"#F27F6C"],[0.72240802675585281,"#F2806C"],[0.72575250836120397,"#F3816C"],[0.72909698996655514,"#F3836C"],[0.73244147157190631,"#F4846C"],[0.73578595317725748,"#F4856C"],[0.73913043478260865,"#F5876C"],[0.74247491638795982,"#F5886C"],[0.74581939799331098,"#F6896C"],[0.74916387959866215,"#F68B6C"],[0.75250836120401332,"#F78C6C"],[0.75585284280936449,"#F78D6C"],[0.75919732441471566,"#F88F6C"],[0.76254180602006683,"#F8906C"],[0.76588628762541799,"#F9916C"],[0.76923076923076916,"#F9936D"],[0.77257525083612044,"#FA946D"],[0.77591973244147161,"#FA956D"],[0.77926421404682278,"#FB976D"],[0.78260869565217395,"#FB986D"],[0.78595317725752512,"#FC996D"],[0.78929765886287628,"#FC9B6D"],[0.79264214046822745,"#FD9C6D"],[0.79598662207357862,"#FD9D6D"],[0.79933110367892979,"#FE9F6D"],[0.80267558528428096,"#FEA06E"],[0.80602006688963213,"#FEA26F"],[0.80936454849498329,"#FEA471"],[0.81270903010033446,"#FFA572"],[0.81605351170568563,"#FFA773"],[0.8193979933110368,"#FFA875"],[0.82274247491638797,"#FFAA76"],[0.82608695652173914,"#FFAC77"],[0.8294314381270903,"#FFAD79"],[0.83277591973244147,"#FFAF7A"],[0.83612040133779264,"#FFB07B"],[0.83946488294314381,"#FFB27D"],[0.84280936454849498,"#FFB47E"],[0.84615384615384615,"#FFB57F"],[0.84949832775919731,"#FFB781"],[0.85284280936454848,"#FFB882"],[0.85618729096989965,"#FFBA83"],[0.85953177257525082,"#FFBB85"],[0.86287625418060199,"#FFBD86"],[0.86622073578595316,"#FFBF87"],[0.86956521739130432,"#FFC089"],[0.87290969899665549,"#FFC28A"],[0.87625418060200666,"#FFC38B"],[0.87959866220735783,"#FFC58D"],[0.882943143812709,"#FFC78E"],[0.88628762541806017,"#FFC890"],[0.88963210702341133,"#FFCA91"],[0.8929765886287625,"#FFCB92"],[0.89632107023411367,"#FFCD94"],[0.89966555183946484,"#FFCE95"],[0.90301003344481601,"#FFD096"],[0.90635451505016718,"#FFD198"],[0.90969899665551834,"#FFD399"],[0.91304347826086951,"#FFD59A"],[0.91638795986622068,"#FFD69C"],[0.91973244147157185,"#FFD89D"],[0.92307692307692302,"#FFD99F"],[0.92642140468227419,"#FFDBA0"],[0.92976588628762535,"#FFDCA1"],[0.93311036789297652,"#FFDEA3"],[0.93645484949832769,"#FFDFA4"],[0.93979933110367886,"#FFE1A6"],[0.94314381270903014,"#FFE3A7"],[0.94648829431438131,"#FFE4A8"],[0.94983277591973247,"#FFE6AA"],[0.95317725752508364,"#FFE7AB"],[0.95652173913043481,"#FFE9AD"],[0.95986622073578598,"#FFEAAE"],[0.96321070234113715,"#FEECAF"],[0.96655518394648832,"#FEEDB1"],[0.96989966555183948,"#FEEFB2"],[0.97324414715719065,"#FEF1B4"],[0.97658862876254182,"#FEF2B5"],[0.97993311036789299,"#FDF4B6"],[0.98327759197324416,"#FDF5B8"],[0.98662207357859533,"#FDF7B9"],[0.98996655518394649,"#FDF8BB"],[0.99331103678929766,"#FDFABC"],[0.99665551839464883,"#FCFBBE"],[1,"#FCFDBF"]],"colorbar":{"bgcolor":null,"bordercolor":null,"borderwidth":0,"thickness":23.039999999999996,"title":"Crimes per 1,000 residents","titlefont":{"color":"rgba(0,0,0,1)","family":"","size":14.611872146118724},"tickmode":"array","ticktext":["0","25","50","75","100","125"],"tickvals":[0.0016666666666666668,0.19632812499999999,0.39098958333333328,0.58565104166666671,0.78031249999999996,0.97497395833333333],"tickfont":{"color":"rgba(0,0,0,1)","family":"","size":11.68949771689498},"ticklen":2,"len":0.5}},"xaxis":"x","yaxis":"y","frame":null}],"layout":{"margin":{"t":33.534246575342465,"r":0,"b":0,"l":0},"paper_bgcolor":"rgba(0,0,0,0)","font":{"color":"rgba(0,0,0,1)","family":"","size":14.611872146118724},"title":{"text":"Florida County Crime Rates","font":{"color":"rgba(0,0,0,1)","family":"","size":17.534246575342465},"x":0,"xref":"paper"},"xaxis":{"domain":[0,1],"automargin":true,"type":"linear","autorange":false,"range":[-88.017491531372073,-79.704439926147458],"tickmode":"array","ticktext":["-88","-86","-84","-82","-80"],"tickvals":[-88,-86,-84,-82,-80],"categoryorder":"array","categoryarray":["-88","-86","-84","-82","-80"],"nticks":null,"ticks":"","tickcolor":null,"ticklen":0,"tickwidth":0,"showticklabels":false,"tickfont":{"color":null,"family":null,"size":0},"tickangle":-0,"showline":false,"linecolor":null,"linewidth":0,"showgrid":false,"gridcolor":null,"gridwidth":0,"zeroline":false,"anchor":"y","title":{"text":"","font":{"color":null,"family":null,"size":0}},"scaleanchor":"y","scaleratio":0.76923076923076916,"hoverformat":".2f"},"yaxis":{"domain":[0,1],"automargin":true,"type":"linear","autorange":false,"range":[24.836001300811766,31.302401638031007],"tickmode":"array","ticktext":["25","26","27","28","29","30","31"],"tickvals":[25,26,27,28,29,30,31],"categoryorder":"array","categoryarray":["25","26","27","28","29","30","31"],"nticks":null,"ticks":"","tickcolor":null,"ticklen":0,"tickwidth":0,"showticklabels":false,"tickfont":{"color":null,"family":null,"size":0},"tickangle":-0,"showline":false,"linecolor":null,"linewidth":0,"showgrid":false,"gridcolor":null,"gridwidth":0,"zeroline":false,"anchor":"x","title":{"text":"","font":{"color":null,"family":null,"size":0}},"scaleanchor":"x","scaleratio":1.3,"hoverformat":".2f"},"shapes":[{"type":"rect","fillcolor":null,"line":{"color":null,"width":0,"linetype":[]},"yref":"paper","xref":"paper","layer":"below","x0":0,"x1":1,"y0":0,"y1":1}],"showlegend":false,"legend":{"bgcolor":null,"bordercolor":null,"borderwidth":0,"font":{"color":"rgba(0,0,0,1)","family":"","size":11.68949771689498},"title":{"text":"Crimes per 1,000 residents","font":{"color":"rgba(0,0,0,1)","family":"","size":14.611872146118724}}},"hovermode":"closest","barmode":"relative"},"config":{"doubleClick":"reset","modeBarButtonsToAdd":["hoverclosest","hovercompare"],"showSendToCloud":false},"source":"A","attrs":{"61f91e2ffb5c":{"x":{},"y":{},"fill":{},"type":"scatter"}},"cur_data":"61f91e2ffb5c","visdat":{"61f91e2ffb5c":["function (y) ","x"]},"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.20000000000000001,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-heat-map-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;3: An interactive choropleth map representing the crime rate in each county in Florida. The lighter the county’s color, the higher the crime rate.
+</figcaption>
+</figure>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Check this out!
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>If you hover over a county on the choropleth map, it shows the number of crimes per 1,000 residents. Try it for yourself!</p>
+</div>
+</div>
+</section>
+</section>
+<section id="step-3-correlation-analysis" class="level2">
+<h2 class="anchored" data-anchor-id="step-3-correlation-analysis">Step 3 – Correlation Analysis</h2>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>florida_numeric<span class="ot">&lt;-</span> florida_crime <span class="sc">%&gt;%</span> dplyr<span class="sc">::</span><span class="fu">select</span>(<span class="dv">2</span><span class="sc">:</span><span class="dv">5</span>)</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>florida_cor<span class="ot">&lt;-</span> <span class="fu">cor</span>(florida_numeric)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(florida_cor)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="tbl-florida-correlation" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-florida-correlation-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;3: A correlation table exploring the associations between each variable.
+</figcaption>
+<div aria-describedby="tbl-florida-correlation-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<table class="do-not-create-environment cell caption-top table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: left;"></th>
+<th style="text-align: right;">Crime</th>
+<th style="text-align: right;">Income</th>
+<th style="text-align: right;">HighSchoolGrad</th>
+<th style="text-align: right;">UrbanPop</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Crime</td>
+<td style="text-align: right;">1.0000000</td>
+<td style="text-align: right;">0.4337503</td>
+<td style="text-align: right;">0.4669119</td>
+<td style="text-align: right;">0.6773678</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Income</td>
+<td style="text-align: right;">0.4337503</td>
+<td style="text-align: right;">1.0000000</td>
+<td style="text-align: right;">0.7926215</td>
+<td style="text-align: right;">0.7306983</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">HighSchoolGrad</td>
+<td style="text-align: right;">0.4669119</td>
+<td style="text-align: right;">0.7926215</td>
+<td style="text-align: right;">1.0000000</td>
+<td style="text-align: right;">0.7907190</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">UrbanPop</td>
+<td style="text-align: right;">0.6773678</td>
+<td style="text-align: right;">0.7306983</td>
+<td style="text-align: right;">0.7907190</td>
+<td style="text-align: right;">1.0000000</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+<p>Wow, each variable has a substantial relationship with crime! Our correlation matrix shows that of the three variables (Income, HighSchoolGrad, and UrbanPop), Urban Population has the strongest relationship with Crime. Each of the three variables is positively correlated with Crime. Income and HighSchoolGrad have a moderate relationship with Crime, while UrbanPop is strong.</p>
+<p>Let’s visualize it:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggcorrplot</span>(florida_cor, <span class="at">lab =</span> <span class="cn">TRUE</span>, <span class="at">type =</span> <span class="st">"lower"</span>) <span class="sc">+</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Correlation Matrix: Crime, Income, High School Graduate Rate &amp; Urban Population Rate"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div id="fig-correlation-matrix-5" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-correlation-matrix-5-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="05-florida-crime-analytics_files/figure-html/fig-correlation-matrix-5-1.png" class="img-fluid figure-img" width="672">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-correlation-matrix-5-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;4: A correlation matrix exploring the relationships between crime rates, median incomes, high school graduation rates, and urban population rates of all counties in Florida.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggpairs</span>(florida_crime[, <span class="fu">c</span>(<span class="st">"Crime"</span>, <span class="st">"Income"</span>, <span class="st">"HighSchoolGrad"</span>, <span class="st">"UrbanPop"</span>)])</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div id="fig-correlation-matrix-5-2" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-correlation-matrix-5-2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="05-florida-crime-analytics_files/figure-html/fig-correlation-matrix-5-2-1.png" class="img-fluid figure-img" width="672">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-correlation-matrix-5-2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;5: Another representation of the previous correlation matrix. The points in the scatterplots represent the actual counties, while the lines in the line graphs represent the frequency distributions.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="step-4-building-regression-models" class="level2">
+<h2 class="anchored" data-anchor-id="step-4-building-regression-models">Step 4 – Building Regression Models</h2>
+<section id="crime-income" class="level3">
+<h3 class="anchored" data-anchor-id="crime-income">Crime ~ Income</h3>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>m1<span class="ot">&lt;-</span> <span class="fu">lm</span>(Crime <span class="sc">~</span> Income, <span class="at">data=</span>florida_crime)</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(m1)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+lm(formula = Crime ~ Income, data = florida_crime)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-42.452 -21.347  -3.102  17.580  69.357 
+
+Coefficients:
+            Estimate Std. Error t value Pr(&gt;|t|)    
+(Intercept) -11.6059    16.7863  -0.691 0.491782    
+Income        2.6115     0.6729   3.881 0.000246 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 25.6 on 65 degrees of freedom
+Multiple R-squared:  0.1881,    Adjusted R-squared:  0.1756 
+F-statistic: 15.06 on 1 and 65 DF,  p-value: 0.0002456</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">AIC</span>(m1)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 628.6045</code></pre>
+</div>
+</div>
+<ul>
+<li><p>Direction: Positive</p></li>
+<li><p>Strength: Moderate (R^2=0.18)</p></li>
+<li><p>Statistically significant (p&lt;0.05)</p></li>
+</ul>
+<p>Income accounts for ~18% of variability in crime. For each $1000 increase in average income, the crime rate rises by 2.6 points. Both the relationship and model are statistically significant.</p>
+</section>
+<section id="crime-high-school-graduation-rate" class="level3">
+<h3 class="anchored" data-anchor-id="crime-high-school-graduation-rate">Crime ~ High School Graduation Rate (%)</h3>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>m2<span class="ot">&lt;-</span> <span class="fu">lm</span>(Crime <span class="sc">~</span> HighSchoolGrad, <span class="at">data=</span>florida_crime)</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(m2)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+lm(formula = Crime ~ HighSchoolGrad, data = florida_crime)
+
+Residuals:
+   Min     1Q Median     3Q    Max 
+-43.74 -21.36  -4.82  17.42  82.27 
+
+Coefficients:
+               Estimate Std. Error t value Pr(&gt;|t|)    
+(Intercept)    -50.8569    24.4507  -2.080   0.0415 *  
+HighSchoolGrad   1.4860     0.3491   4.257 6.81e-05 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 25.12 on 65 degrees of freedom
+Multiple R-squared:  0.218, Adjusted R-squared:  0.206 
+F-statistic: 18.12 on 1 and 65 DF,  p-value: 6.806e-05</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">AIC</span>(m2)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 626.0932</code></pre>
+</div>
+</div>
+<ul>
+<li><p>Direction: Positive</p></li>
+<li><p>Strength: Moderate (R^2=0.21)</p></li>
+<li><p>Statistically significant (p&lt;0.05)</p></li>
+</ul>
+<p>High school graduation rate accounts for ~21% of variability in crime. For each 1% increase in graduation rate, the crime rate increases by 1.5 points. Both the relationship and model are statistically significant.</p>
+</section>
+<section id="crime-urban-population-rate" class="level3">
+<h3 class="anchored" data-anchor-id="crime-urban-population-rate">Crime ~ Urban Population Rate (%)</h3>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>m3<span class="ot">&lt;-</span> <span class="fu">lm</span>(Crime <span class="sc">~</span> UrbanPop, <span class="at">data=</span>florida_crime)</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(m3)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+lm(formula = Crime ~ UrbanPop, data = florida_crime)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-34.766 -16.541  -4.741  16.521  49.632 
+
+Coefficients:
+            Estimate Std. Error t value Pr(&gt;|t|)    
+(Intercept) 24.54125    4.53930   5.406 9.85e-07 ***
+UrbanPop     0.56220    0.07573   7.424 3.08e-10 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 20.9 on 65 degrees of freedom
+Multiple R-squared:  0.4588,    Adjusted R-squared:  0.4505 
+F-statistic: 55.11 on 1 and 65 DF,  p-value: 3.084e-10</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">AIC</span>(m3)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 601.43</code></pre>
+</div>
+</div>
+<ul>
+<li><p>Direction: Positive</p></li>
+<li><p>Strength: Moderate-Strong (R^2=0.45)</p></li>
+<li><p>Statistically significant (p&lt;0.05)</p></li>
+</ul>
+<p>Urban population percentage accounts for 45% of variance in crime. For every 1% increase in urban population, the crime rate increases by ~0.6 points. Both the relationship and model are statistically significant.</p>
+</section>
+<section id="crime-income-urbanpop" class="level3">
+<h3 class="anchored" data-anchor-id="crime-income-urbanpop">Crime ~ Income + UrbanPop</h3>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>m4 <span class="ot">&lt;-</span> <span class="fu">lm</span>(Crime <span class="sc">~</span> Income <span class="sc">+</span> UrbanPop, <span class="at">data =</span> florida_crime)</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(m4)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+lm(formula = Crime ~ Income + UrbanPop, data = florida_crime)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-36.130 -15.590  -6.484  16.595  48.921 
+
+Coefficients:
+            Estimate Std. Error t value Pr(&gt;|t|)    
+(Intercept)  39.9723    16.3536   2.444   0.0173 *  
+Income       -0.7906     0.8049  -0.982   0.3297    
+UrbanPop      0.6418     0.1110   5.784 2.36e-07 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 20.91 on 64 degrees of freedom
+Multiple R-squared:  0.4669,    Adjusted R-squared:  0.4502 
+F-statistic: 28.02 on 2 and 64 DF,  p-value: 1.815e-09</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="fu">AIC</span>(m4)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 602.4276</code></pre>
+</div>
+</div>
+<p>This model shows us that when accounting for urban population, income seems to not have influence over the crime rate.</p>
+</section>
+<section id="crime-income-highschoolgrad" class="level3">
+<h3 class="anchored" data-anchor-id="crime-income-highschoolgrad">Crime ~ Income + HighSchoolGrad</h3>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>m5 <span class="ot">&lt;-</span> <span class="fu">lm</span>(Crime <span class="sc">~</span> Income <span class="sc">+</span> HighSchoolGrad, <span class="at">data =</span> florida_crime)</span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(m5)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+lm(formula = Crime ~ Income + HighSchoolGrad, data = florida_crime)
+
+Residuals:
+   Min     1Q Median     3Q    Max 
+-42.75 -19.61  -4.57  18.52  77.86 
+
+Coefficients:
+               Estimate Std. Error t value Pr(&gt;|t|)  
+(Intercept)    -46.1094    24.9723  -1.846   0.0695 .
+Income           1.0311     1.0839   0.951   0.3450  
+HighSchoolGrad   1.0540     0.5729   1.840   0.0705 .
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 25.14 on 64 degrees of freedom
+Multiple R-squared:  0.2289,    Adjusted R-squared:  0.2048 
+F-statistic:   9.5 on 2 and 64 DF,  p-value: 0.000244</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="fu">AIC</span>(m5)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 627.1524</code></pre>
+</div>
+</div>
+<p>This model shows that income and graduation rate account for ~20% of the variance in crime, which is not much larger than either of the factors alone. This shows that neither income or graduation rate are driving factors in crime rate.</p>
+</section>
+<section id="crime-highschoolgrad-urbanpop-income" class="level3">
+<h3 class="anchored" data-anchor-id="crime-highschoolgrad-urbanpop-income">Crime ~ HighSchoolGrad + UrbanPop + Income</h3>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>m6 <span class="ot">&lt;-</span> <span class="fu">lm</span>(Crime <span class="sc">~</span> HighSchoolGrad <span class="sc">+</span> UrbanPop <span class="sc">+</span> Income, <span class="at">data =</span> florida_crime)</span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(m6)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+lm(formula = Crime ~ HighSchoolGrad + UrbanPop + Income, data = florida_crime)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-35.407 -15.080  -6.588  16.178  50.125 
+
+Coefficients:
+               Estimate Std. Error t value Pr(&gt;|t|)    
+(Intercept)     59.7147    28.5895   2.089   0.0408 *  
+HighSchoolGrad  -0.4673     0.5544  -0.843   0.4025    
+UrbanPop         0.6972     0.1291   5.399 1.08e-06 ***
+Income          -0.3831     0.9405  -0.407   0.6852    
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+Residual standard error: 20.95 on 63 degrees of freedom
+Multiple R-squared:  0.4728,    Adjusted R-squared:  0.4477 
+F-statistic: 18.83 on 3 and 63 DF,  p-value: 7.823e-09</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="fu">AIC</span>(m6)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 603.6764</code></pre>
+</div>
+</div>
+<p>This model includes all three variables, but still only accounts for ~44% of variance in crime. This is almost the same amount that urban population predicts. With the other models showing that income and graduation rate are not that influential, as well as the urban population rate alone accounting for 45% of variance, we can see that urban population is the driving factor behind crime rate.</p>
+</section>
+<section id="aic" class="level3">
+<h3 class="anchored" data-anchor-id="aic">AIC</h3>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="fu">AIC</span>(m1,m2,m3,m4,m5,m6) <span class="sc">%&gt;%</span> <span class="fu">arrange</span>(AIC) <span class="sc">%&gt;%</span> <span class="fu">kable</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="tbl-aic-5" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-aic-5-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;4: A table that shows the Akaike Information Criterion (AIC) per model.
+</figcaption>
+<div aria-describedby="tbl-aic-5-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<table class="do-not-create-environment cell caption-top table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: left;"></th>
+<th style="text-align: right;">df</th>
+<th style="text-align: right;">AIC</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">m3</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">601.4300</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">m4</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">602.4276</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">m6</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">603.6764</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">m2</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">626.0932</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">m5</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">627.1524</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">m1</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">628.6045</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+<p>Urban population is easily the most influential predictor in crime rate! The model ‘m3’ (Crime ~ Uban Population) is the best model as it balances accuracy and simplicity, as the list of AICs reflects.</p>
+</section>
+</section>
+<section id="step-5---communicate-your-findings" class="level2">
+<h2 class="anchored" data-anchor-id="step-5---communicate-your-findings">Step 5 - Communicate Your Findings</h2>
+<p>Chief,</p>
+<p>The model that best predicts crime rates in Florida counties is Crime ~ UrbanPop. Urban population rate is easily the most influential predictor, explaining 45% of variance in crime alone. The PD should be focusing their efforts towards resources like affordable housing programs, rehabilitative programs, decriminalizing drug use, and reducing homelessness. A limitation in my analysis is that there were only three main variables that I had to work with; I am sure there are other demographic information that could further explain the crime rate.</p>
+<p>Shannon Joyce</p>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

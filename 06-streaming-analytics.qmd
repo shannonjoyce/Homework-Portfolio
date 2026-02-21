@@ -1,0 +1,257 @@
+---
+title: "Assignment 6 - Streaming Analytics"
+author: "Shannon Joyce"
+---
+
+## Introduction
+
+I have been hired as a Data Analyst for The Streaming Analytics Division (SAD). I have been tasked with uncovering whether age group influences people’s preferred streaming platform.
+
+The company wants to know if certain platforms (like Netflix, Hulu, Disney+, or Amazon) appeal more to specific age demographics. I am hoping my analysis will help guide targeted marketing, promotional strategies, and content investment decisions that align with audience preferences.
+
+Using simulated survey data, I will conduct a reproducible R Markdown analysis to determine whether Platform Preference and Age Category are related. I will identify which age–platform combinations contribute most to any significant differences and assess the strength of the relationship using Cramer’s V.
+
+```{r}
+#| label: load-libraries-6
+#| message: false
+#| warning: false
+
+library(readxl)
+library(tidyverse)
+library(ggthemes)
+library(skimr)
+library(ggplot2)
+library(patchwork)
+library(rcompanion)
+library(pheatmap)
+library(knitr)
+```
+
+## Step 1: Data Preparation
+
+I have been provided a dataset representing survey responses from people of three age groups: 18–25, 26–40, and 41+. Each respondent selected their preferred streaming platform from the following options: Netflix, Hulu, Disney+, Amazon, and Other.
+
+```{r}
+#| label: data-prep-6
+
+streaming_data <- read_xlsx("Streaming Services and Age.xlsx")
+
+count(streaming_data)
+```
+
+```{r}
+#| label: tbl-streaming-count
+#| tbl-cap: "The total number of responses in the streaming platform dataset."
+#| tbl-cap-location: top
+
+c_table<- table(streaming_data)
+```
+
+```{r}
+#| label: tbl-counts
+#| tbl-cap: "A table showing the total counts for each Age Category/Platform Preference combination."
+
+kable(c_table)
+```
+
+## Step 2: Visualization
+
+### Stacked Bar Chart & Clustered Bar Chart
+
+```{r}
+#| label: creating-bar-plots
+#| warning: false
+
+stacked <- ggplot(streaming_data, aes(x = AgeCat, fill = Platform)) +
+  geom_bar(position = "fill") +
+  labs(
+    title = "Proportion of Platform Preferences by Age Group",
+    y = "Proportion of Participants",
+    x = "Age Group"
+  ) +
+  theme_solarized() +
+  theme(
+    plot.margin = unit(c(0.5, 1, 1, 1), "cm"),
+    plot.title = element_text(size = 12, margin = margin(b = 10))
+  )
+clustered <- ggplot(streaming_data, aes(x = AgeCat, fill = Platform)) +
+  geom_bar(position = "dodge") +
+  geom_text(
+    stat = "count",
+    aes(label = after_stat(count)),
+    position = position_dodge(width = 0.9),
+    vjust = -0.3,
+    size = 3
+  ) +
+  labs(
+    title = "Preferred Platform by Age Group",
+    x = "Age Group",
+    y = "Number of Participants",
+    fill = "Platform"
+  ) +
+  theme_solarized() +
+  theme(
+    plot.margin = unit(c(0.5, 1, 0.5, 1), "cm"),
+    plot.title = element_text(size = 12, margin = margin(b = 10))
+  )
+```
+
+```{r}
+#| label: fig-stacked
+#| warning: false
+#| fig-cap: "A stacked bar chart representing the proportion of participants that prefer each streaming service by age group."
+
+stacked
+```
+
+```{r}
+#| label: fig-clustered
+#| warning: false
+#| fig-cap: "A clustered bar chart represening the preferred streaming service of each age group."
+
+clustered
+```
+
+## Step 3: Chi-Square Test of Independence
+
+```{r}
+#| label: chi-square-test-6
+
+chi_square_test<- chisq.test(c_table)
+chi_square_test
+```
+
+-   The Chi-Square statistic (χ²) = 68.044
+
+-   Degrees of freedom (df) = 8
+
+-   The p-value = 1.203e-11 (statistically significant)
+
+This test indicates that the relationship between age and platform preference is statistically significant.
+
+## Step 4: Observed, Expected, and Residual Values
+
+### Observed counts
+
+#### The actual frequencies in our dataset:
+
+```{r}
+#| label: creating-observed
+
+observed<- chi_square_test$observed
+```
+
+```{r}
+#| label: tbl-observed
+#| tbl-cap: "A table that represents the actual observed frequencies in the dataset."
+
+kable(observed)
+```
+
+### Expected counts
+
+#### What we would expect if age and platform were independent:
+
+```{r}
+#| label: creating-expected
+
+expected<- chi_square_test$expected
+```
+
+```{r}
+#| label: tbl-expected
+#| tbl-cap: "A table that represents the expected frequencies if age and platform were independent from each other."
+
+kable(expected)
+```
+
+### Residuals
+
+#### The difference between observed and expected values:
+
+```{r}
+#| label: creating-residuals
+
+residuals<- chi_square_test$residuals
+```
+
+```{r}
+#| label: tbl-residuals
+#| tbl-cap: "A table that represents the residuals; the difference between the observed and expected values."
+
+kable(residuals)
+```
+
+Older viewers prefer Amazon more than expected, and prefer Hulu and Netflix less than expected. On the other hand, younger people prefer Hulu and Netflix more than expected, and Amazon less than expected. 26-40 year olds also prefer Amazon less than expected.
+
+## Step 5: Contributions to the Chi-Square Statistic
+
+### Contributions
+
+```{r}
+#| label: creating-contributions
+
+contributions<- ((observed-expected)^2)/expected
+```
+
+```{r}
+#| label: tbl-contributions
+#| tbl-cap: "A table that represents the amount that each age group/streaming platform combination contributed to the chi-square statistic."
+
+kable(contributions)
+```
+
+### Percent Contributions
+
+#### Which age-platform pairs drive the overall result?
+
+```{r}
+#| label: creating-contributions-percentage
+
+percent_contributions<- contributions / chi_square_test$statistic *100
+```
+
+```{r}
+#| label: tbl-contributions-percentage
+#| tbl-cap: "A table that represents the percentage that each age group/streaming platform combination contributed to the chi-square statistic."
+
+kable(percent_contributions)
+```
+
+#### Let's visualize it:
+
+```{r}
+#| label: fig-pheatmap6
+#| fig-cap: "A visual representation of the percentages in which each age group/streaming service combination contributed to the chi-square statistic. The warmer the color, the larger the percentage and contribution."
+
+pheatmap(percent_contributions,
+         display_numbers = TRUE,
+         cluster_rows = FALSE,
+         cluster_cols = FALSE,
+         main = "% Contribution to Chi-Square Statistic")
+```
+
+The cell that majorly contributed to our chi-square statistic is 41+/Amazon by over 36%, followed by the 18-25/Amazon cell at 16%. 
+
+::: {.callout-important}
+## Uneven Contributions to the Chi-Square Statistic
+
+The significant chi-square result is not caused by equal differences across all age–platform combinations. Instead, a few specific cells contribute much more to the overall statistic than others.
+
+This means the relationship between age and platform preference is driven mainly by certain age groups (particularly those involving Amazon), rather than consistent differences across every platform.
+:::
+
+## Step 6: Effect Size (Cramer’s V)
+
+```{r}
+#| label: cramers-v
+
+cv<- cramerV(c_table)
+print(cv)
+```
+
+There is a moderate association (0.3) between Age Category and Platform, which means that a person's age group can give you an idea of what their preferred platform is, but it will not always predict it. However, due to the percentage contributions, the effect size may be stronger for Age Category & Amazon specifically; you can confidently assume that the younger a person is, the less they prefer Amazon, and as the age category rises, the likelihood of preference for Amazon rises too.
+
+## Step 7: Final Interpretation
+
+The chi-square test revealed a significant relationship between age and platform preference, χ²(8, N = 300) = 68.044, p = 1.203e-11. The largest contributions came from the 18-25/Amazon and 41+/Amazon cells. Cramer's V = 0.34 indicates a moderate association between Age Category and Platform. This suggests that younger viewers strongly disfavor Amazon and older viewers strongly prefer it. Instead, younger viewers opt for platforms such as Netflix or Hulu.

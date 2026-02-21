@@ -1,0 +1,342 @@
+---
+title: "Assignment 3 (Midterm) - Sleep & Exercise Analysis"
+author: "Shannon Joyce"
+---
+
+## Introduction
+
+In this assignment, I have been tasked with analyzing data from Dr. Matthew Walker’s sleep lab to determine which exercise type best improves sleep quality and duration. I used both datasets provided to create derived variables with which I ran descriptive statistics and simple visualizations. I followed these preliminary insights with t-tests, ANOVAs, and post-hoc tests.
+
+## Setup & Data Import
+
+```{r}
+#| label: load-packages-import-data
+#| message: false
+#| warning: false
+
+library(readxl)
+library(tidyverse)
+library(supernova)
+library(mosaic)
+library(ggplot2)
+library(WRS2)
+library(knitr)
+
+participant_info_midterm <- read_excel("participant_info_midterm.xlsx")
+sleep_data_midterm <- read_excel("sleep_data_midterm.xlsx")
+```
+
+```{r}
+#| label: tbl-dataset
+#| tbl-cap: "First 6 rows of the participant info dataset."
+
+kable(head(participant_info_midterm[, 1:4]))
+```
+
+```{r}
+#| label: tbl-dataset-2
+#| tbl-cap: "First 6 rows of the sleep dataset."
+
+kable(head(sleep_data_midterm[, 1:4]))
+```
+
+In this first chunk, I loaded all of my packages and uploaded the two datasets I will be working with.
+
+::: {.callout-tip}
+## Did you know?
+
+You can actually upload multiple sheets of data from one file without separating them. In this assignment, I was unaware of that possibility, and I ended up saving the individual sheets as multiple files in order to successfully upload both datasets. In the next chapter, you'll see how I used the function lapply() to upload multiple sheets of data at once!
+:::
+
+## Merge & Base Cleaning
+
+```{r}
+#| label: merge-and-base-cleaning
+
+unique(participant_info_midterm$Exercise_Group)
+participant_info_midterm <- participant_info_midterm %>%
+  mutate(Exercise_Group = dplyr::recode(Exercise_Group,
+                                 "NONE" = "None",
+                                 "Nonee" = "None",
+                                 "N" = "None",
+                                 "C" = "Cardio",
+                                 "WEIGHTZ" = "Weights",
+                                 "WEIGHTS" = "Weights",
+                                 "WEIGHTSSS" = "Weights",
+                                 "CW" = "Cardio+Weights",
+                                 "C+W" = "Cardio+Weights"))
+
+unique(participant_info_midterm$Sex)
+participant_info_midterm <- participant_info_midterm %>%
+  mutate(Sex = dplyr::recode(Sex,
+                      "Malee" = "Male",
+                      "Femalee" = "Female",
+                      "F" = "Female",
+                      "M" = "Male",
+                      "Fem" = "Female",
+                      "MALE" = "Male",
+                      "Mal" = "Male"))
+
+unique(sleep_data_midterm$Pre_Sleep)
+sleep_data_midterm <- sleep_data_midterm %>%
+  mutate(Pre_Sleep = str_remove(Pre_Sleep, "zzz-|SLEEP-|sleep-|score-|Sleep-"))
+
+participant_sleep_midterm <- merge(sleep_data_midterm, participant_info_midterm, by="ID")
+```
+
+```{r}
+#| label: tbl-merged-dataset
+#| tbl-cap: "First 6 rows of the merged dataset."
+
+kable(head(participant_sleep_midterm[, 1:7]))
+```
+
+In this chunk, I focused on cleaning the data. This included standardizing the 'Exercise Group' and 'Sex' columns as well as cleaning up the scores in the 'Pre-Sleep' column. Afterwards, I merged the two datasets into one large dataset.
+
+## Create Derived Variables
+
+```{r}
+#| label: creating-derived-variables
+
+str(participant_sleep_midterm$Pre_Sleep)
+participant_sleep_midterm <- participant_sleep_midterm %>%
+  mutate(Pre_Sleep = as.numeric(Pre_Sleep))
+
+participant_sleep_midterm$Sleep_Difference <- participant_sleep_midterm$Post_Sleep - participant_sleep_midterm$Pre_Sleep
+
+participant_sleep_midterm <- participant_sleep_midterm %>%
+  mutate(
+    AgeGroup2 = case_when(
+      Age < 40  ~ "<40",
+      Age >= 40 ~ ">=40"
+    )
+  )
+
+count(is.na(participant_sleep_midterm$Sleep_Difference))
+participant_sleep_midterm <- participant_sleep_midterm %>% 
+  filter(!is.na(Sleep_Difference))
+```
+
+```{r}
+#| label: tbl-derived-data
+#| tbl-cap: "Participant Sleep Data with Derived Variables."
+
+kable(head(participant_sleep_midterm[, 1:9]))
+```
+
+In this chunk, I created new variables using existing data. I created a 'Sleep_Difference' variable by finding the difference between the Post- and Pre- sleep scores. I then created an age group variable by sorting participants into 2 groups: those under 40 years old, and those who are 40 years or older. Finally, I found that there were 14 rows that had NA values in the 'Sleep_Difference' column, and I deleted those participants from the dataset.
+
+## Descriptive Statistics
+
+```{r}
+#| label: tbl-descriptive-statistics3
+#| tbl-cap: "Table showing preliminary descriptive statistics such as averages and frequencies to better understand the dataset and what patterns to explore regarding difference in sleep quality."
+#| tbl-cap-location: bottom
+
+favstats(participant_sleep_midterm$Sleep_Difference) %>% kable()
+```
+
+```{r}
+#| label: tbl-descriptive-statistics4
+#| tbl-cap: "Table showing preliminary descriptive statistics such as averages and frequencies to better understand the dataset and what patterns to explore regarding sleep efficiency."
+#| tbl-cap-location: bottom
+
+favstats(participant_sleep_midterm$Sleep_Efficiency) %>% kable()
+```
+
+```{r}
+#| label: tbl-descriptive-statistics-4
+#| tbl-cap: "Table representing the average difference in sleep quality and average sleep efficiency scores for each exercise group."
+#| tbl-cap-location: bottom
+
+participant_sleep_midterm %>%
+  group_by(Exercise_Group) %>%
+  dplyr::summarize(
+    mean_Sleep_Difference = mean(Sleep_Difference),
+    mean_Sleep_Efficiency = mean(Sleep_Efficiency)
+  ) %>% kable()
+```
+
+This is a summary of the descriptive statistics of the 'Sleep_Difference' and 'Sleep_Efficiency variables, including mean, sd, min, max, and group-wise means.
+
+## Visualizations
+
+```{r}
+#| label: fig-visualizations-3
+#| fig-cap: "Difference in sleep efficiency between participants who exercised using cardiovascular exercise only, weights only, both cardiovascular and weights, or no exercise at all."
+
+ggplot(participant_sleep_midterm, aes(x = Sleep_Difference, y = Exercise_Group, fill = Exercise_Group)) +
+  geom_boxplot(outlier.shape = NA) +
+  theme_classic() +
+  coord_flip() +
+  theme(legend.position = "none") +
+  labs(title = "Difference in Sleep Efficiency by Type of Exercise",
+          x = "Difference in Sleep Efficiency", y = "Type of Exercise")
+```
+
+```{r}
+#| label: fig-visualizationss-3
+#| fig-cap: "Average sleep efficiency between participants who exercised using cardiovascular exercise only, weights only, both cardiovascular and weights, or no exercise at all."
+
+ggplot(participant_sleep_midterm, aes(x = Sleep_Efficiency, y = Exercise_Group, fill = Exercise_Group)) +
+  geom_boxplot(outlier.shape = NA) +
+  theme_classic() +
+  coord_flip() +
+  theme(legend.position = "none") +
+  labs(title = "Sleep Efficiency by Type of Exercise",
+       x = "Sleep Efficiency", y = "Type of Exercise")
+```
+
+```{r}
+#| label: fig-visualizationsss-3
+#| fig-cap: "Difference in sleep efficiency by participant after exercise portion."
+
+ggplot(participant_sleep_midterm, aes(x = Sleep_Difference, y = Sleep_Efficiency)) +
+  geom_point() +
+  theme_classic() +
+  geom_smooth(method = "lm", color = "steelblue") +
+  labs(title = "Difference in Sleep Efficiency by Participant After Exercise",
+       x = "Difference in Sleep Efficiency", y = "Sleep Efficiency")
+```
+
+Here are three visualizations: two box plots that represent how type of exercise affects difference in sleep efficiency and sleep efficiency itself, and a scatterplot that represents how exercise affected the difference in sleep efficiency for each participant (including a trend line).
+
+## T-Tests
+
+#### Independent T-Test: Sleep_Difference \~ Sex
+
+```{r}
+#| label: t-test-1
+
+sleepdif_sex_t_test <-t.test(Sleep_Difference ~ Sex, data = participant_sleep_midterm)
+sleepdif_sex_t_test
+```
+
+-   Female mean: 0.7796
+
+-   Male mean: 0.5541
+
+-   P-value: 0.12 (\>0.05)
+
+Differences in sleep efficiency between male and female participants are not statistically different from one another/not statistically significant. We fail to reject the null.
+
+#### Independent T-Test: Sleep_Difference \~ AgeGroup2
+
+```{r}
+#| label: t-test-2
+
+sleepdif_age_t_test <-t.test(Sleep_Difference ~ AgeGroup2, data = participant_sleep_midterm)
+sleepdif_age_t_test
+```
+
+-   \<40 mean: 0.6373
+
+-   =\>40 mean: 0.8421
+
+-   P-value: 0.18 (\>0.05)
+
+Differences in sleep efficiency between participants under 40 years old and participants 40 years old or older are not statistically different from one another/not statistically significant. Again, we fail to reject the null.
+
+## ANOVAs
+
+#### ANOVA A: Sleep_Difference \~ Exercise_Group
+
+```{r}
+#| label: anova-a
+
+anova_model_diff_exercise <- aov(Sleep_Difference ~ Exercise_Group, data = participant_sleep_midterm)
+```
+
+```{r}
+#| label: tbl-anova-a
+#| tbl-cap: "ANOVA table representing how much variance in the difference in sleep can be explained by the type of exercise intervention."
+#| tbl-cap-location: bottom
+
+summary(anova_model_diff_exercise)
+```
+
+```{r}
+#| label: tbl-anova-aa
+#| message: false
+#| warning: false
+#| tbl-cap: "A clearer version of the previous ANOVA table."
+#| tbl-cap-location: bottom
+
+supernova(anova_model_diff_exercise)
+```
+
+-   F-value: 15.717 (large)
+
+-   df: 85
+
+-   p-value: 3.67e-08 (\<0.05, significant!)
+
+-   PRE: 0.3651 (\~36.6% of variance)
+
+Exercise group accounts for about 37% of total variance in difference in sleep efficiency.
+
+#### Post-Hoc: Tukey HSD
+
+```{r}
+#| label: tukey-hsd-a
+
+TukeyHSD(anova_model_diff_exercise)
+```
+
+The 'Cardio' and 'Cardio+Weights' groups were tied for the most positive change in sleep quality; there was no statistically significant difference between these two exercise groups. In addition, the 'Weights' group showed a significantly greater improvement in sleep quality compared to the 'None' group. The 'None' group produced significantly worse results in sleep quality than all of the other groups.
+
+ANOVA B: Sleep_Efficiency \~ Exercise_Group
+
+```{r}
+#| label: anova-b
+
+anova_model_eff_exercise <- aov(Sleep_Efficiency ~ Exercise_Group, data = participant_sleep_midterm)
+```
+
+```{r}
+#| label: tbl-anova-b
+#| tbl-cap: "ANOVA table representing how much variance in sleep efficiency can be explained by the type of exercise intervention."
+#| tbl-cap-location: bottom
+
+summary(anova_model_eff_exercise)
+```
+
+```{r}
+#| label: tbl-anova-bb
+#| message: false
+#| warning: false
+#| tbl-cap: "A clearer version of the previous ANOVA table."
+#| tbl-cap-location: bottom
+
+supernova(anova_model_eff_exercise)
+```
+
+-   F-value: 5.925
+
+-   df: 85
+
+-   p-value: 0.001 (\<0.05, significant!)
+
+-   PRE: 0.1782 (\~17.8% of variance)
+
+Exercise group accounts for about 18% of total variance in sleep efficiency.
+
+#### Post-Hoc: Tukey HSD
+
+```{r}
+#| label: tukey-hsd-b
+
+TukeyHSD(anova_model_eff_exercise)
+```
+
+Only the 'Cardio+Weights' group showed statistically significant improvements in sleep efficiency compared to other groups. Specifically, it performed significantly better than both the 'Weights' and 'None' groups. There was no significant difference between the 'Cardio' and 'Cardio+Weights' groups. The 'Cardio' group showed potential improvement when compared to the 'None' group, but the difference was not found to be statistically significant. The 'None' group had the worst overall sleep efficiency.
+
+The 'Cardio+Weights' group
+
+## Synthesis & Recommendation
+
+Based on both Sleep_Difference and Sleep_Efficiency, the 'Cardio+Weights' exercise is the best choice for improving sleep. It had the highest average improvements and was the only group that showed statistically significant improvements with both variables. For Sleep_Difference, the ANOVA showed a strong effect (F(3, 82) = 15.72, p \< .001), with 'Cardio+Weights' showing significant improvement compared to the 'None' group (p \< .001) and 'Weights' group (p = .00002). For Sleep_Efficiency, the ANOVA model was also significant (F(3, 82) = 5.93, p = .001), and again, 'Cardio+Weights' had much better quality than 'None' (p = .0046) and 'Weights' (p = .0094). While 'Cardio' alone came close to significance, it was not significantly better than any other group. Overall, 'Cardio+Weights' consistently led to better sleep outcomes and is the most effective recommendation.
+
+## Reflection
+
+The analyses were definitely the toughest part- coding them was one thing, but understanding and interpreting them required a completely different mindset (I need to re-up on my statistics for sure). I would say that took the longest. I felt really confident about the cleaning, merging, and plotting, and I had fun trying out different ggplot2 themes to see which I liked the best. Though by the end, I felt confident enough in my data analyses and interpretations, it took a lot of resources to bring me to those conclusions, and I would like to work on my interpretation skills for the future so that it does not take so long for me to parse through everything to figure out what it all means.

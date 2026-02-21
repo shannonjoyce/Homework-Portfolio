@@ -1,0 +1,1395 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.27">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Shannon Joyce">
+
+<title>Assignment 3 (Midterm) - Sleep &amp; Exercise Analysis</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="03-midterm_files/libs/clipboard/clipboard.min.js"></script>
+<script src="03-midterm_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="03-midterm_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="03-midterm_files/libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="03-midterm_files/libs/quarto-html/popper.min.js"></script>
+<script src="03-midterm_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="03-midterm_files/libs/quarto-html/anchor.min.js"></script>
+<link href="03-midterm_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="03-midterm_files/libs/quarto-html/quarto-syntax-highlighting-ed96de9b727972fe78a7b5d16c58bf87.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="03-midterm_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="03-midterm_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="03-midterm_files/libs/bootstrap/bootstrap-d6a003b94517c951b2d65075d42fb01b.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+
+
+</head>
+
+<body class="fullcontent quarto-light">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Assignment 3 (Midterm) - Sleep &amp; Exercise Analysis</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Shannon Joyce </p>
+          </div>
+  </div>
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<p>In this assignment, I have been tasked with analyzing data from Dr.&nbsp;Matthew Walker’s sleep lab to determine which exercise type best improves sleep quality and duration. I used both datasets provided to create derived variables with which I ran descriptive statistics and simple visualizations. I followed these preliminary insights with t-tests, ANOVAs, and post-hoc tests.</p>
+</section>
+<section id="setup-data-import" class="level2">
+<h2 class="anchored" data-anchor-id="setup-data-import">Setup &amp; Data Import</h2>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readxl)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(supernova)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(mosaic)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(WRS2)</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(knitr)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>participant_info_midterm <span class="ot">&lt;-</span> <span class="fu">read_excel</span>(<span class="st">"participant_info_midterm.xlsx"</span>)</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>sleep_data_midterm <span class="ot">&lt;-</span> <span class="fu">read_excel</span>(<span class="st">"sleep_data_midterm.xlsx"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(<span class="fu">head</span>(participant_info_midterm[, <span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>]))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="tbl-dataset" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-dataset-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;1: First 6 rows of the participant info dataset.
+</figcaption>
+<div aria-describedby="tbl-dataset-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<table class="do-not-create-environment cell caption-top table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: left;">ID</th>
+<th style="text-align: left;">Exercise_Group</th>
+<th style="text-align: left;">Sex</th>
+<th style="text-align: right;">Age</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">P001</td>
+<td style="text-align: left;">NONE</td>
+<td style="text-align: left;">Male</td>
+<td style="text-align: right;">35</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">P002</td>
+<td style="text-align: left;">Nonee</td>
+<td style="text-align: left;">Malee</td>
+<td style="text-align: right;">57</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">P003</td>
+<td style="text-align: left;">None</td>
+<td style="text-align: left;">Female</td>
+<td style="text-align: right;">26</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">P004</td>
+<td style="text-align: left;">None</td>
+<td style="text-align: left;">Female</td>
+<td style="text-align: right;">29</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">P005</td>
+<td style="text-align: left;">None</td>
+<td style="text-align: left;">Male</td>
+<td style="text-align: right;">33</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">P006</td>
+<td style="text-align: left;">None</td>
+<td style="text-align: left;">Female</td>
+<td style="text-align: right;">33</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(<span class="fu">head</span>(sleep_data_midterm[, <span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>]))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="tbl-dataset-2" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-dataset-2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;2: First 6 rows of the sleep dataset.
+</figcaption>
+<div aria-describedby="tbl-dataset-2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<table class="do-not-create-environment cell caption-top table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: left;">ID</th>
+<th style="text-align: left;">Pre_Sleep</th>
+<th style="text-align: right;">Post_Sleep</th>
+<th style="text-align: right;">Sleep_Efficiency</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">P001</td>
+<td style="text-align: left;">zzz-5.8</td>
+<td style="text-align: right;">4.7</td>
+<td style="text-align: right;">81.6</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">P002</td>
+<td style="text-align: left;">Sleep-6.6</td>
+<td style="text-align: right;">7.4</td>
+<td style="text-align: right;">75.7</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">P003</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: right;">6.2</td>
+<td style="text-align: right;">82.9</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">P004</td>
+<td style="text-align: left;">SLEEP-7.2</td>
+<td style="text-align: right;">7.3</td>
+<td style="text-align: right;">83.6</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">P005</td>
+<td style="text-align: left;">score-7.4</td>
+<td style="text-align: right;">7.4</td>
+<td style="text-align: right;">83.5</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">P006</td>
+<td style="text-align: left;">Sleep-6.6</td>
+<td style="text-align: right;">7.1</td>
+<td style="text-align: right;">88.5</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+<p>In this first chunk, I loaded all of my packages and uploaded the two datasets I will be working with.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Did you know?
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>You can actually upload multiple sheets of data from one file without separating them. In this assignment, I was unaware of that possibility, and I ended up saving the individual sheets as multiple files in order to successfully upload both datasets. In the next chapter, you’ll see how I used the function lapply() to upload multiple sheets of data at once!</p>
+</div>
+</div>
+</section>
+<section id="merge-base-cleaning" class="level2">
+<h2 class="anchored" data-anchor-id="merge-base-cleaning">Merge &amp; Base Cleaning</h2>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">unique</span>(participant_info_midterm<span class="sc">$</span>Exercise_Group)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code> [1] "NONE"           "Nonee"          "None"           "N"             
+ [5] "Cardio"         "C"              "WEIGHTZ"        "WEIGHTS"       
+ [9] "WEIGHTSSS"      "Cardio+Weights" "CW"             "C+W"           </code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>participant_info_midterm <span class="ot">&lt;-</span> participant_info_midterm <span class="sc">%&gt;%</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Exercise_Group =</span> dplyr<span class="sc">::</span><span class="fu">recode</span>(Exercise_Group,</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>                                 <span class="st">"NONE"</span> <span class="ot">=</span> <span class="st">"None"</span>,</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>                                 <span class="st">"Nonee"</span> <span class="ot">=</span> <span class="st">"None"</span>,</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>                                 <span class="st">"N"</span> <span class="ot">=</span> <span class="st">"None"</span>,</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>                                 <span class="st">"C"</span> <span class="ot">=</span> <span class="st">"Cardio"</span>,</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>                                 <span class="st">"WEIGHTZ"</span> <span class="ot">=</span> <span class="st">"Weights"</span>,</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>                                 <span class="st">"WEIGHTS"</span> <span class="ot">=</span> <span class="st">"Weights"</span>,</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>                                 <span class="st">"WEIGHTSSS"</span> <span class="ot">=</span> <span class="st">"Weights"</span>,</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>                                 <span class="st">"CW"</span> <span class="ot">=</span> <span class="st">"Cardio+Weights"</span>,</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>                                 <span class="st">"C+W"</span> <span class="ot">=</span> <span class="st">"Cardio+Weights"</span>))</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="fu">unique</span>(participant_info_midterm<span class="sc">$</span>Sex)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "Male"    "Malee"   "Female"  "Femalee" "F"       "M"       "Fem"    
+[8] "MALE"    "Mal"    </code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>participant_info_midterm <span class="ot">&lt;-</span> participant_info_midterm <span class="sc">%&gt;%</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Sex =</span> dplyr<span class="sc">::</span><span class="fu">recode</span>(Sex,</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>                      <span class="st">"Malee"</span> <span class="ot">=</span> <span class="st">"Male"</span>,</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>                      <span class="st">"Femalee"</span> <span class="ot">=</span> <span class="st">"Female"</span>,</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>                      <span class="st">"F"</span> <span class="ot">=</span> <span class="st">"Female"</span>,</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>                      <span class="st">"M"</span> <span class="ot">=</span> <span class="st">"Male"</span>,</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>                      <span class="st">"Fem"</span> <span class="ot">=</span> <span class="st">"Female"</span>,</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>                      <span class="st">"MALE"</span> <span class="ot">=</span> <span class="st">"Male"</span>,</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>                      <span class="st">"Mal"</span> <span class="ot">=</span> <span class="st">"Male"</span>))</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a><span class="fu">unique</span>(sleep_data_midterm<span class="sc">$</span>Pre_Sleep)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code> [1] "zzz-5.8"   "Sleep-6.6" NA          "SLEEP-7.2" "score-7.4" "Sleep-6"  
+ [7] "zzz-8.1"   "sleep-5.5" "sleep-5.7" "score-7"   "Sleep-8"   "score-5.3"
+[13] "SLEEP-7.8" "zzz-6.7"   "SLEEP-7.4" "score-7.1" "zzz-6.8"   "Sleep-5.7"
+[19] "sleep-5"   "score-6"   "Sleep-6.2" "score-5.2" "sleep-6.6" "SLEEP-5.6"
+[25] "SLEEP-5.7" "Sleep-6.9" "SLEEP-6.9" "zzz-5.9"   "SLEEP-6.7" "zzz-5.4"  
+[31] "zzz-7"     "zzz-6"     "zzz-6.9"   "score-4"   "SLEEP-7.1" "SLEEP-5.8"
+[37] "sleep-6.7" "zzz-6.4"   "Sleep-6.5" "Sleep-7.2" "score-7.3" "sleep-6.2"
+[43] "sleep-7.3" "SLEEP-6.2" "SLEEP-6.6" "SLEEP-6.1" "score-6.7" "score-5.1"
+[49] "score-5.5" "sleep-6.4" "score-7.5" "zzz-6.6"   "Sleep-5.6" "SLEEP-5.1"
+[55] "sleep-6.5" "score-5.9" "score-6.6" "score-6.5" "sleep-8"   "score-6.2"
+[61] "zzz-7.3"   "sleep-5.6" "zzz-6.1"   "sleep-5.9" "SLEEP-4.4" "zzz-6.5"  </code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>sleep_data_midterm <span class="ot">&lt;-</span> sleep_data_midterm <span class="sc">%&gt;%</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Pre_Sleep =</span> <span class="fu">str_remove</span>(Pre_Sleep, <span class="st">"zzz-|SLEEP-|sleep-|score-|Sleep-"</span>))</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>participant_sleep_midterm <span class="ot">&lt;-</span> <span class="fu">merge</span>(sleep_data_midterm, participant_info_midterm, <span class="at">by=</span><span class="st">"ID"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(<span class="fu">head</span>(participant_sleep_midterm[, <span class="dv">1</span><span class="sc">:</span><span class="dv">7</span>]))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="tbl-merged-dataset" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-merged-dataset-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;3: First 6 rows of the merged dataset.
+</figcaption>
+<div aria-describedby="tbl-merged-dataset-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<table class="do-not-create-environment cell caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 7%">
+<col style="width: 14%">
+<col style="width: 15%">
+<col style="width: 24%">
+<col style="width: 21%">
+<col style="width: 10%">
+<col style="width: 5%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">ID</th>
+<th style="text-align: left;">Pre_Sleep</th>
+<th style="text-align: right;">Post_Sleep</th>
+<th style="text-align: right;">Sleep_Efficiency</th>
+<th style="text-align: left;">Exercise_Group</th>
+<th style="text-align: left;">Sex</th>
+<th style="text-align: right;">Age</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">P001</td>
+<td style="text-align: left;">5.8</td>
+<td style="text-align: right;">4.7</td>
+<td style="text-align: right;">81.6</td>
+<td style="text-align: left;">None</td>
+<td style="text-align: left;">Male</td>
+<td style="text-align: right;">35</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">P002</td>
+<td style="text-align: left;">6.6</td>
+<td style="text-align: right;">7.4</td>
+<td style="text-align: right;">75.7</td>
+<td style="text-align: left;">None</td>
+<td style="text-align: left;">Male</td>
+<td style="text-align: right;">57</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">P003</td>
+<td style="text-align: left;">NA</td>
+<td style="text-align: right;">6.2</td>
+<td style="text-align: right;">82.9</td>
+<td style="text-align: left;">None</td>
+<td style="text-align: left;">Female</td>
+<td style="text-align: right;">26</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">P004</td>
+<td style="text-align: left;">7.2</td>
+<td style="text-align: right;">7.3</td>
+<td style="text-align: right;">83.6</td>
+<td style="text-align: left;">None</td>
+<td style="text-align: left;">Female</td>
+<td style="text-align: right;">29</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">P005</td>
+<td style="text-align: left;">7.4</td>
+<td style="text-align: right;">7.4</td>
+<td style="text-align: right;">83.5</td>
+<td style="text-align: left;">None</td>
+<td style="text-align: left;">Male</td>
+<td style="text-align: right;">33</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">P006</td>
+<td style="text-align: left;">6.6</td>
+<td style="text-align: right;">7.1</td>
+<td style="text-align: right;">88.5</td>
+<td style="text-align: left;">None</td>
+<td style="text-align: left;">Female</td>
+<td style="text-align: right;">33</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+<p>In this chunk, I focused on cleaning the data. This included standardizing the ‘Exercise Group’ and ‘Sex’ columns as well as cleaning up the scores in the ‘Pre-Sleep’ column. Afterwards, I merged the two datasets into one large dataset.</p>
+</section>
+<section id="create-derived-variables" class="level2">
+<h2 class="anchored" data-anchor-id="create-derived-variables">Create Derived Variables</h2>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(participant_sleep_midterm<span class="sc">$</span>Pre_Sleep)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code> chr [1:100] "5.8" "6.6" NA "7.2" "7.4" "6.6" "6" "8.1" "5.5" "5.7" "7" ...</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>participant_sleep_midterm <span class="ot">&lt;-</span> participant_sleep_midterm <span class="sc">%&gt;%</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Pre_Sleep =</span> <span class="fu">as.numeric</span>(Pre_Sleep))</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>participant_sleep_midterm<span class="sc">$</span>Sleep_Difference <span class="ot">&lt;-</span> participant_sleep_midterm<span class="sc">$</span>Post_Sleep <span class="sc">-</span> participant_sleep_midterm<span class="sc">$</span>Pre_Sleep</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>participant_sleep_midterm <span class="ot">&lt;-</span> participant_sleep_midterm <span class="sc">%&gt;%</span></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">AgeGroup2 =</span> <span class="fu">case_when</span>(</span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a>      Age <span class="sc">&lt;</span> <span class="dv">40</span>  <span class="sc">~</span> <span class="st">"&lt;40"</span>,</span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a>      Age <span class="sc">&gt;=</span> <span class="dv">40</span> <span class="sc">~</span> <span class="st">"&gt;=40"</span></span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-14"><a href="#cb14-14" aria-hidden="true" tabindex="-1"></a><span class="fu">count</span>(<span class="fu">is.na</span>(participant_sleep_midterm<span class="sc">$</span>Sleep_Difference))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>n_TRUE 
+    14 </code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>participant_sleep_midterm <span class="ot">&lt;-</span> participant_sleep_midterm <span class="sc">%&gt;%</span> </span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(Sleep_Difference))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(<span class="fu">head</span>(participant_sleep_midterm[, <span class="dv">1</span><span class="sc">:</span><span class="dv">9</span>]))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="tbl-derived-data" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-derived-data-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;4: Participant Sleep Data with Derived Variables.
+</figcaption>
+<div aria-describedby="tbl-derived-data-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<table class="do-not-create-environment cell caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 5%">
+<col style="width: 10%">
+<col style="width: 11%">
+<col style="width: 17%">
+<col style="width: 15%">
+<col style="width: 7%">
+<col style="width: 4%">
+<col style="width: 17%">
+<col style="width: 10%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">ID</th>
+<th style="text-align: right;">Pre_Sleep</th>
+<th style="text-align: right;">Post_Sleep</th>
+<th style="text-align: right;">Sleep_Efficiency</th>
+<th style="text-align: left;">Exercise_Group</th>
+<th style="text-align: left;">Sex</th>
+<th style="text-align: right;">Age</th>
+<th style="text-align: right;">Sleep_Difference</th>
+<th style="text-align: left;">AgeGroup2</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">P001</td>
+<td style="text-align: right;">5.8</td>
+<td style="text-align: right;">4.7</td>
+<td style="text-align: right;">81.6</td>
+<td style="text-align: left;">None</td>
+<td style="text-align: left;">Male</td>
+<td style="text-align: right;">35</td>
+<td style="text-align: right;">-1.1</td>
+<td style="text-align: left;">&lt;40</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">P002</td>
+<td style="text-align: right;">6.6</td>
+<td style="text-align: right;">7.4</td>
+<td style="text-align: right;">75.7</td>
+<td style="text-align: left;">None</td>
+<td style="text-align: left;">Male</td>
+<td style="text-align: right;">57</td>
+<td style="text-align: right;">0.8</td>
+<td style="text-align: left;">&gt;=40</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">P004</td>
+<td style="text-align: right;">7.2</td>
+<td style="text-align: right;">7.3</td>
+<td style="text-align: right;">83.6</td>
+<td style="text-align: left;">None</td>
+<td style="text-align: left;">Female</td>
+<td style="text-align: right;">29</td>
+<td style="text-align: right;">0.1</td>
+<td style="text-align: left;">&lt;40</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">P005</td>
+<td style="text-align: right;">7.4</td>
+<td style="text-align: right;">7.4</td>
+<td style="text-align: right;">83.5</td>
+<td style="text-align: left;">None</td>
+<td style="text-align: left;">Male</td>
+<td style="text-align: right;">33</td>
+<td style="text-align: right;">0.0</td>
+<td style="text-align: left;">&lt;40</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">P006</td>
+<td style="text-align: right;">6.6</td>
+<td style="text-align: right;">7.1</td>
+<td style="text-align: right;">88.5</td>
+<td style="text-align: left;">None</td>
+<td style="text-align: left;">Female</td>
+<td style="text-align: right;">33</td>
+<td style="text-align: right;">0.5</td>
+<td style="text-align: left;">&lt;40</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">P007</td>
+<td style="text-align: right;">6.0</td>
+<td style="text-align: right;">6.7</td>
+<td style="text-align: right;">83.6</td>
+<td style="text-align: left;">None</td>
+<td style="text-align: left;">Male</td>
+<td style="text-align: right;">32</td>
+<td style="text-align: right;">0.7</td>
+<td style="text-align: left;">&lt;40</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+<p>In this chunk, I created new variables using existing data. I created a ‘Sleep_Difference’ variable by finding the difference between the Post- and Pre- sleep scores. I then created an age group variable by sorting participants into 2 groups: those under 40 years old, and those who are 40 years or older. Finally, I found that there were 14 rows that had NA values in the ‘Sleep_Difference’ column, and I deleted those participants from the dataset.</p>
+</section>
+<section id="descriptive-statistics" class="level2">
+<h2 class="anchored" data-anchor-id="descriptive-statistics">Descriptive Statistics</h2>
+<div class="cell" data-tbl-cap-location="bottom">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">favstats</span>(participant_sleep_midterm<span class="sc">$</span>Sleep_Difference) <span class="sc">%&gt;%</span> <span class="fu">kable</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="tbl-descriptive-statistics3" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-tbl-cap-location="bottom">
+<figure class="quarto-float quarto-float-tbl figure">
+<div aria-describedby="tbl-descriptive-statistics3-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<table class="do-not-create-environment cell caption-top table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: left;"></th>
+<th style="text-align: right;">min</th>
+<th style="text-align: right;">Q1</th>
+<th style="text-align: right;">median</th>
+<th style="text-align: right;">Q3</th>
+<th style="text-align: right;">max</th>
+<th style="text-align: right;">mean</th>
+<th style="text-align: right;">sd</th>
+<th style="text-align: right;">n</th>
+<th style="text-align: right;">missing</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"></td>
+<td style="text-align: right;">-1.1</td>
+<td style="text-align: right;">0.3</td>
+<td style="text-align: right;">0.75</td>
+<td style="text-align: right;">1.1</td>
+<td style="text-align: right;">2.1</td>
+<td style="text-align: right;">0.6825581</td>
+<td style="text-align: right;">0.6610494</td>
+<td style="text-align: right;">86</td>
+<td style="text-align: right;">0</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-tbl" id="tbl-descriptive-statistics3-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;5: Table showing preliminary descriptive statistics such as averages and frequencies to better understand the dataset and what patterns to explore regarding difference in sleep quality.
+</figcaption>
+</figure>
+</div>
+</div>
+<div class="cell" data-tbl-cap-location="bottom">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">favstats</span>(participant_sleep_midterm<span class="sc">$</span>Sleep_Efficiency) <span class="sc">%&gt;%</span> <span class="fu">kable</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="tbl-descriptive-statistics4" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-tbl-cap-location="bottom">
+<figure class="quarto-float quarto-float-tbl figure">
+<div aria-describedby="tbl-descriptive-statistics4-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<table class="do-not-create-environment cell caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 4%">
+<col style="width: 7%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 9%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 4%">
+<col style="width: 12%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;"></th>
+<th style="text-align: right;">min</th>
+<th style="text-align: right;">Q1</th>
+<th style="text-align: right;">median</th>
+<th style="text-align: right;">Q3</th>
+<th style="text-align: right;">max</th>
+<th style="text-align: right;">mean</th>
+<th style="text-align: right;">sd</th>
+<th style="text-align: right;">n</th>
+<th style="text-align: right;">missing</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"></td>
+<td style="text-align: right;">71.7</td>
+<td style="text-align: right;">79.975</td>
+<td style="text-align: right;">83.3</td>
+<td style="text-align: right;">88.425</td>
+<td style="text-align: right;">101.5</td>
+<td style="text-align: right;">83.77558</td>
+<td style="text-align: right;">5.973804</td>
+<td style="text-align: right;">86</td>
+<td style="text-align: right;">0</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-tbl" id="tbl-descriptive-statistics4-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;6: Table showing preliminary descriptive statistics such as averages and frequencies to better understand the dataset and what patterns to explore regarding sleep efficiency.
+</figcaption>
+</figure>
+</div>
+</div>
+<div class="cell" data-tbl-cap-location="bottom">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>participant_sleep_midterm <span class="sc">%&gt;%</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(Exercise_Group) <span class="sc">%&gt;%</span></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>  dplyr<span class="sc">::</span><span class="fu">summarize</span>(</span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">mean_Sleep_Difference =</span> <span class="fu">mean</span>(Sleep_Difference),</span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">mean_Sleep_Efficiency =</span> <span class="fu">mean</span>(Sleep_Efficiency)</span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span> <span class="fu">kable</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="tbl-descriptive-statistics-4" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-tbl-cap-location="bottom">
+<figure class="quarto-float quarto-float-tbl figure">
+<div aria-describedby="tbl-descriptive-statistics-4-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<table class="do-not-create-environment cell caption-top table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: left;">Exercise_Group</th>
+<th style="text-align: right;">mean_Sleep_Difference</th>
+<th style="text-align: right;">mean_Sleep_Efficiency</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Cardio</td>
+<td style="text-align: right;">1.1380952</td>
+<td style="text-align: right;">85.44762</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Cardio+Weights</td>
+<td style="text-align: right;">0.8608696</td>
+<td style="text-align: right;">86.83478</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">None</td>
+<td style="text-align: right;">0.0476190</td>
+<td style="text-align: right;">81.07143</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Weights</td>
+<td style="text-align: right;">0.6666667</td>
+<td style="text-align: right;">81.45714</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-tbl" id="tbl-descriptive-statistics-4-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;7: Table representing the average difference in sleep quality and average sleep efficiency scores for each exercise group.
+</figcaption>
+</figure>
+</div>
+</div>
+<p>This is a summary of the descriptive statistics of the ‘Sleep_Difference’ and ’Sleep_Efficiency variables, including mean, sd, min, max, and group-wise means.</p>
+</section>
+<section id="visualizations" class="level2">
+<h2 class="anchored" data-anchor-id="visualizations">Visualizations</h2>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(participant_sleep_midterm, <span class="fu">aes</span>(<span class="at">x =</span> Sleep_Difference, <span class="at">y =</span> Exercise_Group, <span class="at">fill =</span> Exercise_Group)) <span class="sc">+</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_boxplot</span>(<span class="at">outlier.shape =</span> <span class="cn">NA</span>) <span class="sc">+</span></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_classic</span>() <span class="sc">+</span></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_flip</span>() <span class="sc">+</span></span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>) <span class="sc">+</span></span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Difference in Sleep Efficiency by Type of Exercise"</span>,</span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>          <span class="at">x =</span> <span class="st">"Difference in Sleep Efficiency"</span>, <span class="at">y =</span> <span class="st">"Type of Exercise"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div id="fig-visualizations-3" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-visualizations-3-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="03-midterm_files/figure-html/fig-visualizations-3-1.png" class="img-fluid figure-img" width="672">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-visualizations-3-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: Difference in sleep efficiency between participants who exercised using cardiovascular exercise only, weights only, both cardiovascular and weights, or no exercise at all.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(participant_sleep_midterm, <span class="fu">aes</span>(<span class="at">x =</span> Sleep_Efficiency, <span class="at">y =</span> Exercise_Group, <span class="at">fill =</span> Exercise_Group)) <span class="sc">+</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_boxplot</span>(<span class="at">outlier.shape =</span> <span class="cn">NA</span>) <span class="sc">+</span></span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_classic</span>() <span class="sc">+</span></span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_flip</span>() <span class="sc">+</span></span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>) <span class="sc">+</span></span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Sleep Efficiency by Type of Exercise"</span>,</span>
+<span id="cb22-7"><a href="#cb22-7" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Sleep Efficiency"</span>, <span class="at">y =</span> <span class="st">"Type of Exercise"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div id="fig-visualizationss-3" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-visualizationss-3-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="03-midterm_files/figure-html/fig-visualizationss-3-1.png" class="img-fluid figure-img" width="672">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-visualizationss-3-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;2: Average sleep efficiency between participants who exercised using cardiovascular exercise only, weights only, both cardiovascular and weights, or no exercise at all.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(participant_sleep_midterm, <span class="fu">aes</span>(<span class="at">x =</span> Sleep_Difference, <span class="at">y =</span> Sleep_Efficiency)) <span class="sc">+</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_classic</span>() <span class="sc">+</span></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">"lm"</span>, <span class="at">color =</span> <span class="st">"steelblue"</span>) <span class="sc">+</span></span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Difference in Sleep Efficiency by Participant After Exercise"</span>,</span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Difference in Sleep Efficiency"</span>, <span class="at">y =</span> <span class="st">"Sleep Efficiency"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>`geom_smooth()` using formula = 'y ~ x'</code></pre>
+</div>
+<div class="cell-output-display">
+<div id="fig-visualizationsss-3" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-visualizationsss-3-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="03-midterm_files/figure-html/fig-visualizationsss-3-1.png" class="img-fluid figure-img" width="672">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-visualizationsss-3-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;3: Difference in sleep efficiency by participant after exercise portion.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>Here are three visualizations: two box plots that represent how type of exercise affects difference in sleep efficiency and sleep efficiency itself, and a scatterplot that represents how exercise affected the difference in sleep efficiency for each participant (including a trend line).</p>
+</section>
+<section id="t-tests" class="level2">
+<h2 class="anchored" data-anchor-id="t-tests">T-Tests</h2>
+<section id="independent-t-test-sleep_difference-sex" class="level4">
+<h4 class="anchored" data-anchor-id="independent-t-test-sleep_difference-sex">Independent T-Test: Sleep_Difference ~ Sex</h4>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>sleepdif_sex_t_test <span class="ot">&lt;-</span><span class="fu">t.test</span>(Sleep_Difference <span class="sc">~</span> Sex, <span class="at">data =</span> participant_sleep_midterm)</span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>sleepdif_sex_t_test</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+    Welch Two Sample t-test
+
+data:  Sleep_Difference by Sex
+t = 1.5801, df = 77.647, p-value = 0.1182
+alternative hypothesis: true difference in means between group Female and group Male is not equal to 0
+95 percent confidence interval:
+ -0.05865017  0.50972574
+sample estimates:
+mean in group Female   mean in group Male 
+           0.7795918            0.5540541 </code></pre>
+</div>
+</div>
+<ul>
+<li><p>Female mean: 0.7796</p></li>
+<li><p>Male mean: 0.5541</p></li>
+<li><p>P-value: 0.12 (&gt;0.05)</p></li>
+</ul>
+<p>Differences in sleep efficiency between male and female participants are not statistically different from one another/not statistically significant. We fail to reject the null.</p>
+</section>
+<section id="independent-t-test-sleep_difference-agegroup2" class="level4">
+<h4 class="anchored" data-anchor-id="independent-t-test-sleep_difference-agegroup2">Independent T-Test: Sleep_Difference ~ AgeGroup2</h4>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>sleepdif_age_t_test <span class="ot">&lt;-</span><span class="fu">t.test</span>(Sleep_Difference <span class="sc">~</span> AgeGroup2, <span class="at">data =</span> participant_sleep_midterm)</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>sleepdif_age_t_test</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+    Welch Two Sample t-test
+
+data:  Sleep_Difference by AgeGroup2
+t = -1.3746, df = 36.662, p-value = 0.1776
+alternative hypothesis: true difference in means between group &lt;40 and group &gt;=40 is not equal to 0
+95 percent confidence interval:
+ -0.50676303  0.09717936
+sample estimates:
+ mean in group &lt;40 mean in group &gt;=40 
+         0.6373134          0.8421053 </code></pre>
+</div>
+</div>
+<ul>
+<li><p>&lt;40 mean: 0.6373</p></li>
+<li><p>=&gt;40 mean: 0.8421</p></li>
+<li><p>P-value: 0.18 (&gt;0.05)</p></li>
+</ul>
+<p>Differences in sleep efficiency between participants under 40 years old and participants 40 years old or older are not statistically different from one another/not statistically significant. Again, we fail to reject the null.</p>
+</section>
+</section>
+<section id="anovas" class="level2">
+<h2 class="anchored" data-anchor-id="anovas">ANOVAs</h2>
+<section id="anova-a-sleep_difference-exercise_group" class="level4">
+<h4 class="anchored" data-anchor-id="anova-a-sleep_difference-exercise_group">ANOVA A: Sleep_Difference ~ Exercise_Group</h4>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>anova_model_diff_exercise <span class="ot">&lt;-</span> <span class="fu">aov</span>(Sleep_Difference <span class="sc">~</span> Exercise_Group, <span class="at">data =</span> participant_sleep_midterm)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div id="tbl-anova-a" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-tbl-cap-location="bottom">
+<figure class="quarto-float quarto-float-tbl figure">
+<div aria-describedby="tbl-anova-a-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(anova_model_diff_exercise)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>               Df Sum Sq Mean Sq F value   Pr(&gt;F)    
+Exercise_Group  3  13.56   4.520   15.72 3.67e-08 ***
+Residuals      82  23.58   0.288                     
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-tbl" id="tbl-anova-a-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;8: ANOVA table representing how much variance in the difference in sleep can be explained by the type of exercise intervention.
+</figcaption>
+</figure>
+</div>
+<div id="tbl-anova-aa" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-tbl-cap-location="bottom">
+<figure class="quarto-float quarto-float-tbl figure">
+<div aria-describedby="tbl-anova-aa-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb32"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="fu">supernova</span>(anova_model_diff_exercise)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code> Analysis of Variance Table (Type III SS)
+ Model: Sleep_Difference ~ Exercise_Group
+
+                             SS df    MS      F   PRE     p
+ ----- --------------- | ------ -- ----- ------ ----- -----
+ Model (error reduced) | 13.560  3 4.520 15.717 .3651 .0000
+ Error (from model)    | 23.583 82 0.288                   
+ ----- --------------- | ------ -- ----- ------ ----- -----
+ Total (empty model)   | 37.144 85 0.437                   </code></pre>
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-tbl" id="tbl-anova-aa-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;9: A clearer version of the previous ANOVA table.
+</figcaption>
+</figure>
+</div>
+<ul>
+<li><p>F-value: 15.717 (large)</p></li>
+<li><p>df: 85</p></li>
+<li><p>p-value: 3.67e-08 (&lt;0.05, significant!)</p></li>
+<li><p>PRE: 0.3651 (~36.6% of variance)</p></li>
+</ul>
+<p>Exercise group accounts for about 37% of total variance in difference in sleep efficiency.</p>
+</section>
+<section id="post-hoc-tukey-hsd" class="level4">
+<h4 class="anchored" data-anchor-id="post-hoc-tukey-hsd">Post-Hoc: Tukey HSD</h4>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="fu">TukeyHSD</span>(anova_model_diff_exercise)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>  Tukey multiple comparisons of means
+    95% family-wise confidence level
+
+Fit: aov(formula = Sleep_Difference ~ Exercise_Group, data = participant_sleep_midterm)
+
+$Exercise_Group
+                             diff        lwr         upr     p adj
+Cardio+Weights-Cardio  -0.2772257 -0.7017134  0.14726203 0.3237562
+None-Cardio            -1.0904762 -1.5245041 -0.65644825 0.0000000
+Weights-Cardio         -0.4714286 -0.9054565 -0.03740063 0.0278779
+None-Cardio+Weights    -0.8132505 -1.2377382 -0.38876282 0.0000171
+Weights-Cardio+Weights -0.1942029 -0.6186906  0.23028480 0.6287294
+Weights-None            0.6190476  0.1850197  1.05307556 0.0018927</code></pre>
+</div>
+</div>
+<p>The ‘Cardio’ and ‘Cardio+Weights’ groups were tied for the most positive change in sleep quality; there was no statistically significant difference between these two exercise groups. In addition, the ‘Weights’ group showed a significantly greater improvement in sleep quality compared to the ‘None’ group. The ‘None’ group produced significantly worse results in sleep quality than all of the other groups.</p>
+<p>ANOVA B: Sleep_Efficiency ~ Exercise_Group</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>anova_model_eff_exercise <span class="ot">&lt;-</span> <span class="fu">aov</span>(Sleep_Efficiency <span class="sc">~</span> Exercise_Group, <span class="at">data =</span> participant_sleep_midterm)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div id="tbl-anova-b" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-tbl-cap-location="bottom">
+<figure class="quarto-float quarto-float-tbl figure">
+<div aria-describedby="tbl-anova-b-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(anova_model_eff_exercise)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>               Df Sum Sq Mean Sq F value  Pr(&gt;F)   
+Exercise_Group  3  540.4   180.1   5.925 0.00104 **
+Residuals      82 2492.9    30.4                   
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-tbl" id="tbl-anova-b-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;10: ANOVA table representing how much variance in sleep efficiency can be explained by the type of exercise intervention.
+</figcaption>
+</figure>
+</div>
+<div id="tbl-anova-bb" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-tbl-cap-location="bottom">
+<figure class="quarto-float quarto-float-tbl figure">
+<div aria-describedby="tbl-anova-bb-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="fu">supernova</span>(anova_model_eff_exercise)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code> Analysis of Variance Table (Type III SS)
+ Model: Sleep_Efficiency ~ Exercise_Group
+
+                               SS df      MS     F   PRE     p
+ ----- --------------- | -------- -- ------- ----- ----- -----
+ Model (error reduced) |  540.400  3 180.133 5.925 .1782 .0010
+ Error (from model)    | 2492.939 82  30.402                  
+ ----- --------------- | -------- -- ------- ----- ----- -----
+ Total (empty model)   | 3033.339 85  35.686                  </code></pre>
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-tbl" id="tbl-anova-bb-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;11: A clearer version of the previous ANOVA table.
+</figcaption>
+</figure>
+</div>
+<ul>
+<li><p>F-value: 5.925</p></li>
+<li><p>df: 85</p></li>
+<li><p>p-value: 0.001 (&lt;0.05, significant!)</p></li>
+<li><p>PRE: 0.1782 (~17.8% of variance)</p></li>
+</ul>
+<p>Exercise group accounts for about 18% of total variance in sleep efficiency.</p>
+</section>
+<section id="post-hoc-tukey-hsd-1" class="level4">
+<h4 class="anchored" data-anchor-id="post-hoc-tukey-hsd-1">Post-Hoc: Tukey HSD</h4>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="fu">TukeyHSD</span>(anova_model_eff_exercise)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>  Tukey multiple comparisons of means
+    95% family-wise confidence level
+
+Fit: aov(formula = Sleep_Efficiency ~ Exercise_Group, data = participant_sleep_midterm)
+
+$Exercise_Group
+                             diff        lwr         upr     p adj
+Cardio+Weights-Cardio   1.3871636  -2.977172  5.75149915 0.8383629
+None-Cardio            -4.3761905  -8.838613  0.08623232 0.0566544
+Weights-Cardio         -3.9904762  -8.452899  0.47194661 0.0962888
+None-Cardio+Weights    -5.7633540 -10.127690 -1.39901844 0.0046379
+Weights-Cardio+Weights -5.3776398  -9.741975 -1.01330416 0.0094267
+Weights-None            0.3857143  -4.076709  4.84813708 0.9958617</code></pre>
+</div>
+</div>
+<p>Only the ‘Cardio+Weights’ group showed statistically significant improvements in sleep efficiency compared to other groups. Specifically, it performed significantly better than both the ‘Weights’ and ‘None’ groups. There was no significant difference between the ‘Cardio’ and ‘Cardio+Weights’ groups. The ‘Cardio’ group showed potential improvement when compared to the ‘None’ group, but the difference was not found to be statistically significant. The ‘None’ group had the worst overall sleep efficiency.</p>
+<p>The ‘Cardio+Weights’ group</p>
+</section>
+</section>
+<section id="synthesis-recommendation" class="level2">
+<h2 class="anchored" data-anchor-id="synthesis-recommendation">Synthesis &amp; Recommendation</h2>
+<p>Based on both Sleep_Difference and Sleep_Efficiency, the ‘Cardio+Weights’ exercise is the best choice for improving sleep. It had the highest average improvements and was the only group that showed statistically significant improvements with both variables. For Sleep_Difference, the ANOVA showed a strong effect (F(3, 82) = 15.72, p &lt; .001), with ‘Cardio+Weights’ showing significant improvement compared to the ‘None’ group (p &lt; .001) and ‘Weights’ group (p = .00002). For Sleep_Efficiency, the ANOVA model was also significant (F(3, 82) = 5.93, p = .001), and again, ‘Cardio+Weights’ had much better quality than ‘None’ (p = .0046) and ‘Weights’ (p = .0094). While ‘Cardio’ alone came close to significance, it was not significantly better than any other group. Overall, ‘Cardio+Weights’ consistently led to better sleep outcomes and is the most effective recommendation.</p>
+</section>
+<section id="reflection" class="level2">
+<h2 class="anchored" data-anchor-id="reflection">Reflection</h2>
+<p>The analyses were definitely the toughest part- coding them was one thing, but understanding and interpreting them required a completely different mindset (I need to re-up on my statistics for sure). I would say that took the longest. I felt really confident about the cleaning, merging, and plotting, and I had fun trying out different ggplot2 themes to see which I liked the best. Though by the end, I felt confident enough in my data analyses and interpretations, it took a lot of resources to bring me to those conclusions, and I would like to work on my interpretation skills for the future so that it does not take so long for me to parse through everything to figure out what it all means.</p>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

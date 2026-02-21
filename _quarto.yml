@@ -1,0 +1,27 @@
+project:
+  type: book
+
+book:
+  title: "Reproducible Psychological Research with R: Homework Portfolio"
+  author: "Shannon Joyce"
+  date: "`r Sys.Date()`"
+  chapters:
+    - index.qmd
+    - 01-nyc-shootings.qmd
+    - 02-law-firm-analysis.qmd
+    - 03-midterm.qmd
+    - 04-nba-analytics.qmd
+    - 05-florida-crime-analytics.qmd
+    - 06-streaming-analytics.qmd
+    - 07-wage-analytics.qmd
+    - 08-shiny-app.qmd
+    - 09-reflection.qmd
+
+bibliography: references.bib
+
+format:
+  html: {}
+  pdf:
+    documentclass: scrreprt
+
+editor: visual

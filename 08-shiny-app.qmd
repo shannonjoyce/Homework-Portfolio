@@ -1,0 +1,277 @@
+---
+title: "Assignment 8 - Shiny App"
+author: "Shannon Joyce"
+---
+
+## Introduction
+
+In this assignment, I had been tasked with taking the Shiny App creation in any direction I would like to, so long as it includes 311 data from NYC Open Data. So, I created an interactive choropleth map of the five boroughs of New York City. The dropdown bar allows you to select a complaint type, and the map reflects the number of the selected complaint type in each borough by creating a variation in color, with the darker color representing a larger number of complaints. If you hover the mouse over each borough, the name of the borough and number of complaints is presented.
+
+::: {.callout-warning}
+## Shiny App Warning
+
+Quarto does not currently support dynamic Shiny Applications, resulting in **code only** being published in this version.
+:::
+
+```{r}
+#| label: load-packages-8
+#| message: false
+#| warning: false
+
+library(shiny)
+library(shinythemes)
+library(tidyverse)
+library(DT)
+library(plotly)
+library(nycOpenData)
+library(ggplot2)
+library(maps)
+```
+
+### Calling & Cleaning the Data
+
+```{r}
+#| label: call-and-clean
+
+data_311<- nyc_311(limit = 10000)
+
+data_311<- data_311 %>% mutate(
+  complaint_type = dplyr::recode(
+    complaint_type, "APPLIANCE" = "Appliance",
+    "Animal-Abuse" = "Animal Abuse",
+    "Noise - Commercial" = "Noise",
+    "Noise - Residential" = "Noise",
+    "Noise - Street/Sidewalk" = "Noise",
+    "General Construction/Plumbing" = "Construction/Plumbing",
+    "PLUMBING" = "Construction/Plumbing",
+    "Plumbing" = "Construction/Plumbing",
+    "PAINT/PLASTER" = "Paint/Plaster",
+    "Sewer" = "Root/Sewer/Sidewalk/Street Condition",
+    "Root/Sewer/Sidewalk/ Condition" = "Root/Sewer/Sidewalk/Street Condition",
+    "Sidewalk Condition" = "Root/Sewer/Sidewalk/Street Condition",
+    "SAFETY" = "Safety",
+    "Street Condition" = "Root/Sewer/Sidewalk/Street Condition",
+    "Street Sign - Damaged" = "Street Sign Condition",
+    "Street Sign - Dangling" = "Street Sign Condition",
+    "Street Sign - Missing" = "Street Sign Condition",
+    "UNSANITARY CONDITION" = "Dirty Condition",
+    "WATER LEAK" = "Water System/Leak",
+    "Water System" = "Water System/Leak",
+    "Water Conservation" = "Water System/Leak",
+    "ELECTRIC" = "Electric",
+    "Damaged Tree" = "Tree Condition",
+    "Dead/Dying Tree" = "Tree Condition",
+    "Illegal Tree Damage" = "Tree Condition",
+    "Overgrown Tree/Branches" = "Tree Condition",
+    "HEAT/HOT WATER" = "Heat/Hot Water",
+    "DOOR/WINDOW" = "Door/Window",
+    "Noise - Helicopter" = "Noise",
+    "Noise - House of Worship" = "Noise",
+    "Noise - Park" = "Noise",
+    "Noise - Vehicle" = "Noise",
+    "Water Quality" = "Water System/Leak",
+    "Uprooted Stump" = "Tree Condition",
+    "Mobile Food Vendor" = "Vendor Enforcement",
+    "Indoor Air Quality" = "Air Quality",
+    "ELEVATOR" = "Elevator",
+    "Encampment" = "Homeless Person/People",
+    "Homeless Person Assistance" = "Homeless Person/People",
+    "Drinking" = "Drinking/Drug Activity",
+    "Drug Activity" = "Drinking/Drug Activity",
+    "Curb Condition" = "Root/Sewer/Sidewalk/Street Condition",
+  ))
+```
+
+Just cleaning my data here; lots of the complaint categories could fit into a broader (but still specific enough) category, and some of the column names could have been better standardized to match the format of the other categories.
+
+### Map Setup
+
+```{r}
+#| label: map-setup
+
+nyc_map<- map_data("county", "new york") %>%
+  dplyr::filter(subregion == "bronx" | subregion == "kings" | subregion == "new york" | subregion == "richmond" | subregion == "queens") %>%
+  mutate(borough = case_when(
+    subregion == "bronx" ~ "Bronx",
+    subregion == "kings" ~ "Brooklyn",
+    subregion == "new york" ~ "Manhattan",
+    subregion == "richmond" ~ "Staten Island",
+    subregion == "queens" ~ "Queens"
+  ))
+
+data_311 <- data_311 %>%
+  mutate(
+    borough = str_to_title(borough)
+  )
+```
+
+Here, I am pulling data from a geolocation function and creating a new dataset from it in order to make a working choropleth map.
+
+### Shiny App Setup
+
+```{r}
+#| label: shiny-app
+
+shinyApp(ui <- fluidPage(
+  theme = shinytheme("journal"),
+  titlePanel("NYC 311 Navigator"),
+  sidebarLayout(
+    sidebarPanel(
+      selectInput("complaint", "Choose a complaint type:",
+                  choices = c("Abandoned Vehicle", "Air Quality", "Animal Abuse", "Appliance", "Blocked Driveway", "Cannabis Retailer", "Consumer Complaint", "Construction/Plumbing", "Dirty Condition", "Door/Window", "Drinking/Drug Activity", "Electric", "Elevator", "Food Establishment", "Graffiti", "Heat/Hot Water", "Homeless Person/People", "Illegal Dumping", "Illegal Parking", "Lead", "Lost Property", "Missed Collection", "Noise", "Obstruction", "Paint/Plaster", "Panhandling", "Rodent", "Root/Sewer/Sidewalk/Street Condition", "Safety", "Smoking or Vaping", "Street Sign Condition", "Traffic", "Tree Condition", "Vendor Enforcement", "Water System/Leak"))
+    ),
+    mainPanel(
+      plotlyOutput("boromap"),
+      br(),
+      textOutput("complainttext")
+    )
+  )
+),
+
+server <- function(input, output) {
+  
+  output$boromap <- renderPlotly({
+    
+    boro_data_311 <- data_311 %>%
+      filter(complaint_type == input$complaint)
+    
+    boro_sum <- boro_data_311 %>%
+      group_by(borough) %>%
+      dplyr::summarize(total_complaints = n())
+    
+    nyc_map_final <- left_join(nyc_map, boro_sum, by = "borough") %>%
+      mutate(
+        hover_text = paste("Borough:", borough, "\nComplaints:", total_complaints)
+      )
+    
+    title <- paste("Total Reports of", input$complaint, "by Borough")
+    
+    nyc_map<- ggplot(data = nyc_map_final, aes(x = long, y = lat, group = group, fill = total_complaints, text = hover_text)) +
+      geom_polygon(color = 'black', linewidth = 0.2) +
+      coord_fixed(1.2) +
+      scale_fill_distiller(palette = "BuPu", direction = 1, name = "Total Complaints") + 
+      labs(
+        title = title) +
+      theme_void()
+    
+    ggplotly(nyc_map, tooltip = "text")
+  })
+  
+  output$complainttext <- renderText({
+    
+    type <- input$complaint
+    if (type == "Abandoned Vehicle") {
+      return("This number represents the amount of reports of abandoned vehicles.")
+      }
+    if (type == "Air Quality") {
+      return("This number includes reports of both indoor and outdoor air quality.")
+    }
+    if (type == "Animal Abuse") {
+      return("This includes reports of neglect or abuse of animals.")
+    }
+    if (type == "Appliance") {
+      return("This report includes requests for pickup of large appliances.")
+    }
+    if (type == "Blocked Driveway") {
+      return("This includes complaints of any private driveway being obstructed by a vehicle.")
+    }
+    if (type == "Cannabis Retailer") {
+      return("This complaint includes reports of businesses illegally selling cannabis.")
+    }
+    if (type == "Consumer Complaint") {
+      return("This includes complaints of issues with businesses.")
+    }
+    if (type == "Construction/Plumbing") {
+      return("This type of complaint can include reports of buildings that need construction/plumbing service, or reports of construction/plumbing work being done illegally.")
+    }
+    if (type == "Dirty Condition") {
+      return("This number includes reports of general dirty conditions as well as unsanitary conditions.")
+    }
+    if (type == "Door/Window") {
+      return("This includes reports of broken doors or windows that need to be replaced.")
+    }
+    if (type == "Drinking/Drug Activity") {
+      return("This includes reports of drinking or illegal drug activity in public spaces.")
+    }
+    if (type == "Electric") {
+      return("This includes reports of electrical problems.")
+    }
+    if (type == "Elevator") {
+      return("This includes reports of elevators that are not working.")
+    }
+    if (type == "Food Establishment") {
+      return("This number includes reports of food safety concerns, unsanitary conditions, and violations in any food establishments.")
+    }
+    if (type == "Graffiti") {
+      return("This includes reports of new graffiti on public or private property.")
+    }
+    if (type == "Heat/Hot Water") {
+      return("This includes complaints of no heat or no hot water in residential spaces.")
+    }
+    if (type == "Homeless Person/People") {
+      return("This complaint includes reports of encampment, as well as requests for assistance of a homeless person or people.")
+    }
+    if (type == "Illegal Dumping") {
+      return("This complaint includes illegal dumping of any type of material.")
+    }
+    if (type == "Illegal Parking") {
+      return("This complaint includes reports of any non-emergency vehicle parked in an unauthorized location or without a permit (if required).")
+    }
+    if (type == "Lead") {
+      return("This includes reports of lead paint that is found or chipping.")
+    }
+    if (type == "Lost Property") {
+      return("This includes reports of lost items in general public areas or in a taxi.")
+    }
+    if (type == "Missed Collection") {
+      return("This includes reports of trash, recycling, or bulk that were not collected at a scheduled collection time.")
+    }
+    if (type == "Noise") {
+      return("This includes complaints of noise from commercial or residential buildings, streets/sidewalks, helicopters, houses of worship, parks, and/or vehicles.")
+    }
+    if (type == "Obstruction") {
+      return("This number includes complaints of blocked streets or sidewalks.")
+    }
+    if (type == "Paint/Plaster") {
+      return("This number includes requests for building service involving paint or plaster.")
+    }
+    if (type == "Panhandling") {
+      return("This number includes reports of aggressive panhandling, described as making the victim fear for their safety or having their property stolen.")
+    }
+    if (type == "Rodent") {
+      return("'As a veteran of dealing with rats—you will never win the war, you can only have detente.' - Curtis Sliwa")
+    }
+    if (type == "Root/Sewer/Sidewalk/Street Condition") {
+      return("This complaint includes unsatisfactory conditions of roots, sewers, sidewalks, streets, and curbs.")
+    }
+    if (type == "Safety") {
+      return("This number includes reports of safety concerns for the general public.")
+    }
+    if (type == "Smoking or Vaping") {
+      return("This type of complaint includes reports of smoking/vaping in common areas of residential buildings, in commercial buildings, or in public areas where smoking/vaping is prohibited.")
+    }
+    if (type == "Street Sign Condition") {
+      return("Reported street sign conditions include damaged, dangling, and/or missing street signs.")
+    }
+    if (type == "Traffic") {
+      return("This number represents amount of reports of traffic conditions.")
+    }
+    if (type == "Tree Condition") {
+      return("Reported tree conditions include trees that are damaged, dead/dying, overgrown, or uprooted.")
+    }
+    if (type == "Vendor Enforcement") {
+      return("This number includes reports of illegal vending; either violating approved vending locations or selling counterfeit items.")
+    }
+    if (type == "Water System/Leak") {
+      return("Water reports include issues with a water system, water conservation issues (such as a leaking hydrant), main water breaks, leaks, and issues with water quality.")
+    }
+  })
+},
+options = list(height = 600))
+```
+
+### Comments
+
+While unavailable to view in Bookdown format, we have an embedded ShinyApp with a working choropleth map that represents the amount of complaints in each borough for the selected complaint from the dropdown bar. While viewing the data when I was creating this chart, I noticed that calling the most recent 10,000 complaints only pulls up roughly the past day or so of complaints. Because the data is called directly from NYCOpenData each time the ShinyApp is run, it is constantly loading the newest version of the dataset, so the data changes each time, which is an unintentional but interesting aspect of this map.
+
+Due to the fact that the data is changing each day, it is difficult to note findings that will still ring true each time the ShinyApp is ran. However, what I have noticed consistently is that the type of complaint with the most amount of reports is always Noise complaints. Following Noise complaints, the most often reported complaints seem to be Heat/Hot Water and Illegal Parking complaints.

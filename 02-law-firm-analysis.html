@@ -1,0 +1,1332 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.27">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Shannon Joyce">
+
+<title>Assignment 2 - Law Firm Analysis</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="02-law-firm-analysis_files/libs/clipboard/clipboard.min.js"></script>
+<script src="02-law-firm-analysis_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="02-law-firm-analysis_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="02-law-firm-analysis_files/libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="02-law-firm-analysis_files/libs/quarto-html/popper.min.js"></script>
+<script src="02-law-firm-analysis_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="02-law-firm-analysis_files/libs/quarto-html/anchor.min.js"></script>
+<link href="02-law-firm-analysis_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="02-law-firm-analysis_files/libs/quarto-html/quarto-syntax-highlighting-ed96de9b727972fe78a7b5d16c58bf87.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="02-law-firm-analysis_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="02-law-firm-analysis_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="02-law-firm-analysis_files/libs/bootstrap/bootstrap-d6a003b94517c951b2d65075d42fb01b.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+
+
+</head>
+
+<body class="fullcontent quarto-light">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Assignment 2 - Law Firm Analysis</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Shannon Joyce </p>
+          </div>
+  </div>
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<p>I have been hired as a data scientist by a law firm that specializes in fighting parking and camera tickets. The firm wants to work on their marketing strategy and have asked me to look at patterns in NYC violation data that can better inform them. So far, I have looked at day of the week, time of day, and violation type. Unfortunately, there was nothing of much significance there. Now, I will be looking into three more variables- issuing agency, the state the driver is from that received the violation, and the county the violation was issued in- and how these variables affect payment amount. Here is the dataset I am using: <a href="https://data.cityofnewyork.us/City-Government/Open-Parking-and-Camera-Violations/nc67-uf89/about_data">NYC Parking and Camera Violation</a></p>
+</section>
+<section id="uploading-and-cleaning-the-data" class="level2">
+<h2 class="anchored" data-anchor-id="uploading-and-cleaning-the-data">Uploading and Cleaning the Data</h2>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(httr)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(jsonlite)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(supernova)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(AICcmodavg)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(mosaic)</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(knitr)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>endpoint<span class="ot">&lt;-</span><span class="st">"https://data.cityofnewyork.us/resource/nc67-uf89.json"</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>resp <span class="ot">&lt;-</span> <span class="fu">GET</span>(endpoint, <span class="at">query =</span> <span class="fu">list</span>(</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="st">"$limit"</span> <span class="ot">=</span> <span class="dv">99999</span>,</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  <span class="st">"$order"</span> <span class="ot">=</span> <span class="st">"issue_date DESC"</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>))</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>camera <span class="ot">&lt;-</span> <span class="fu">fromJSON</span>(<span class="fu">content</span>(resp, <span class="at">as =</span> <span class="st">"text"</span>), <span class="at">flatten =</span> <span class="cn">TRUE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>camera <span class="ot">&lt;-</span> camera <span class="sc">%&gt;%</span> </span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(across</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>         (<span class="fu">c</span>(<span class="st">"fine_amount"</span>, <span class="st">"interest_amount"</span>, <span class="st">"reduction_amount"</span>, <span class="st">"payment_amount"</span>, <span class="st">"amount_due"</span>),</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>           <span class="sc">~</span><span class="fu">as.numeric</span>(.)</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>         ))</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>camera <span class="ot">&lt;-</span> camera <span class="sc">%&gt;%</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">str_detect</span>(issue_date, <span class="st">"^</span><span class="sc">\\</span><span class="st">d{4}-</span><span class="sc">\\</span><span class="st">d{2}-</span><span class="sc">\\</span><span class="st">d{2}T"</span>))</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>camera <span class="ot">&lt;-</span> camera <span class="sc">%&gt;%</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">county =</span> dplyr<span class="sc">::</span><span class="fu">recode</span>(county,</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>                           <span class="st">"Q"</span> <span class="ot">=</span> <span class="st">"Queens County"</span>,</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>                           <span class="st">"K"</span> <span class="ot">=</span> <span class="st">"Kings County"</span>,</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>                           <span class="st">"BX"</span> <span class="ot">=</span> <span class="st">"Bronx County"</span>,</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>                           <span class="st">"NY"</span> <span class="ot">=</span> <span class="st">"New York County"</span>,</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>                           <span class="st">"R"</span> <span class="ot">=</span> <span class="st">"Richmond County"</span>,</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>                           <span class="st">"QN"</span> <span class="ot">=</span> <span class="st">"Queens County"</span>,</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>                           <span class="st">"MN"</span> <span class="ot">=</span> <span class="st">"New York County"</span>,</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>                           <span class="st">"BK"</span> <span class="ot">=</span> <span class="st">"Kings County"</span>,</span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>                           <span class="st">"ST"</span> <span class="ot">=</span> <span class="st">"Richmond County"</span>,</span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>                           <span class="st">"Bronx"</span> <span class="ot">=</span> <span class="st">"Bronx County"</span>,</span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>                           <span class="st">"Kings"</span> <span class="ot">=</span> <span class="st">"Kings County"</span>,</span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>                           <span class="st">"Qns"</span> <span class="ot">=</span> <span class="st">"Queens County"</span>,</span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>                           <span class="st">"RICH"</span> <span class="ot">=</span> <span class="st">"Richmond County"</span>))</span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>camera <span class="ot">&lt;-</span> camera <span class="sc">%&gt;%</span> <span class="fu">rename</span>(<span class="st">'plate_state'</span> <span class="ot">=</span> <span class="st">'state'</span>)</span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>camera <span class="ot">&lt;-</span> camera <span class="sc">%&gt;%</span> <span class="fu">rename</span>(<span class="st">'agency'</span> <span class="ot">=</span> <span class="st">'issuing_agency'</span>)</span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a>camera_states <span class="ot">&lt;-</span> camera <span class="sc">%&gt;%</span></span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(plate_state <span class="sc">==</span> <span class="st">"NJ"</span> <span class="sc">|</span> plate_state <span class="sc">==</span> <span class="st">"NY"</span> <span class="sc">|</span> plate_state <span class="sc">==</span> <span class="st">"CT"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section>
+<section id="agency" class="level2">
+<h2 class="anchored" data-anchor-id="agency">Agency</h2>
+<section id="do-certain-agencies-issue-higher-payments" class="level3">
+<h3 class="anchored" data-anchor-id="do-certain-agencies-issue-higher-payments">Do certain agencies issue higher payments?</h3>
+<section id="visualization" class="level4">
+<h4 class="anchored" data-anchor-id="visualization">Visualization</h4>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(camera, <span class="fu">aes</span>(<span class="at">x =</span> agency, <span class="at">y =</span> payment_amount, <span class="at">fill =</span> agency)) <span class="sc">+</span> <span class="fu">geom_boxplot</span>() <span class="sc">+</span> <span class="fu">coord_flip</span>() <span class="sc">+</span> </span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Payment Amount Across Agencies"</span>,</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Agency"</span>,</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Payment Amount in Dollars"</span>) <span class="sc">+</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div id="fig-visualization-1" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-visualization-1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="02-law-firm-analysis_files/figure-html/fig-visualization-1-1.png" class="img-fluid figure-img" width="672">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-visualization-1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: The average payment amount issued by each NYC agency.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="descriptive-statistics" class="level4">
+<h4 class="anchored" data-anchor-id="descriptive-statistics">Descriptive Statistics</h4>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">favstats</span>(payment_amount <span class="sc">~</span> agency, <span class="at">data =</span> camera) <span class="sc">%&gt;%</span> <span class="fu">arrange</span>(<span class="fu">desc</span>(mean)) <span class="sc">%&gt;%</span> <span class="fu">kable</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="tbl-descriptive-stats-1" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-descriptive-stats-1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;1: Table showing preliminary descriptive statistics such as averages and frequencies to better understand the dataset and what patterns to explore regarding issuing agency.
+</figcaption>
+<div aria-describedby="tbl-descriptive-stats-1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<table class="do-not-create-environment cell caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 6%">
+<col style="width: 6%">
+<col style="width: 6%">
+<col style="width: 8%">
+<col style="width: 6%">
+<col style="width: 9%">
+<col style="width: 9%">
+<col style="width: 5%">
+<col style="width: 7%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">agency</th>
+<th style="text-align: right;">min</th>
+<th style="text-align: right;">Q1</th>
+<th style="text-align: right;">median</th>
+<th style="text-align: right;">Q3</th>
+<th style="text-align: right;">max</th>
+<th style="text-align: right;">mean</th>
+<th style="text-align: right;">sd</th>
+<th style="text-align: right;">n</th>
+<th style="text-align: right;">missing</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">HEALTH DEPARTMENT POLICE</td>
+<td style="text-align: right;">243.81</td>
+<td style="text-align: right;">243.81</td>
+<td style="text-align: right;">243.81</td>
+<td style="text-align: right;">243.8100</td>
+<td style="text-align: right;">243.81</td>
+<td style="text-align: right;">243.81000</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">SEA GATE ASSOCIATION POLICE</td>
+<td style="text-align: right;">190.00</td>
+<td style="text-align: right;">190.00</td>
+<td style="text-align: right;">190.00</td>
+<td style="text-align: right;">190.0000</td>
+<td style="text-align: right;">190.00</td>
+<td style="text-align: right;">190.00000</td>
+<td style="text-align: right;">0.00000</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">FIRE DEPARTMENT</td>
+<td style="text-align: right;">180.00</td>
+<td style="text-align: right;">180.00</td>
+<td style="text-align: right;">180.00</td>
+<td style="text-align: right;">180.0000</td>
+<td style="text-align: right;">180.00</td>
+<td style="text-align: right;">180.00000</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">NYS OFFICE OF MENTAL HEALTH POLICE</td>
+<td style="text-align: right;">0.00</td>
+<td style="text-align: right;">180.00</td>
+<td style="text-align: right;">180.00</td>
+<td style="text-align: right;">190.0000</td>
+<td style="text-align: right;">210.00</td>
+<td style="text-align: right;">161.33333</td>
+<td style="text-align: right;">65.99423</td>
+<td style="text-align: right;">15</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">PORT AUTHORITY</td>
+<td style="text-align: right;">0.00</td>
+<td style="text-align: right;">180.00</td>
+<td style="text-align: right;">180.00</td>
+<td style="text-align: right;">190.0000</td>
+<td style="text-align: right;">242.76</td>
+<td style="text-align: right;">150.49319</td>
+<td style="text-align: right;">80.53742</td>
+<td style="text-align: right;">47</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">ROOSEVELT ISLAND SECURITY</td>
+<td style="text-align: right;">0.00</td>
+<td style="text-align: right;">135.00</td>
+<td style="text-align: right;">180.00</td>
+<td style="text-align: right;">190.0000</td>
+<td style="text-align: right;">246.68</td>
+<td style="text-align: right;">149.16083</td>
+<td style="text-align: right;">90.57967</td>
+<td style="text-align: right;">24</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">NYS PARKS POLICE</td>
+<td style="text-align: right;">0.00</td>
+<td style="text-align: right;">0.00</td>
+<td style="text-align: right;">180.00</td>
+<td style="text-align: right;">190.0000</td>
+<td style="text-align: right;">242.58</td>
+<td style="text-align: right;">142.50970</td>
+<td style="text-align: right;">90.27092</td>
+<td style="text-align: right;">33</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">POLICE DEPARTMENT</td>
+<td style="text-align: right;">0.00</td>
+<td style="text-align: right;">65.00</td>
+<td style="text-align: right;">180.00</td>
+<td style="text-align: right;">190.0000</td>
+<td style="text-align: right;">260.00</td>
+<td style="text-align: right;">136.71574</td>
+<td style="text-align: right;">82.82498</td>
+<td style="text-align: right;">190</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">PARKS DEPARTMENT</td>
+<td style="text-align: right;">0.00</td>
+<td style="text-align: right;">90.00</td>
+<td style="text-align: right;">180.00</td>
+<td style="text-align: right;">190.0000</td>
+<td style="text-align: right;">245.28</td>
+<td style="text-align: right;">128.47736</td>
+<td style="text-align: right;">78.92728</td>
+<td style="text-align: right;">144</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">TAXI AND LIMOUSINE COMMISSION</td>
+<td style="text-align: right;">125.00</td>
+<td style="text-align: right;">125.00</td>
+<td style="text-align: right;">125.00</td>
+<td style="text-align: right;">125.0000</td>
+<td style="text-align: right;">125.00</td>
+<td style="text-align: right;">125.00000</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">HEALTH AND HOSPITAL CORP. POLICE</td>
+<td style="text-align: right;">0.00</td>
+<td style="text-align: right;">0.00</td>
+<td style="text-align: right;">180.00</td>
+<td style="text-align: right;">190.0000</td>
+<td style="text-align: right;">245.64</td>
+<td style="text-align: right;">124.71373</td>
+<td style="text-align: right;">98.60130</td>
+<td style="text-align: right;">51</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">CON RAIL</td>
+<td style="text-align: right;">0.00</td>
+<td style="text-align: right;">0.00</td>
+<td style="text-align: right;">95.00</td>
+<td style="text-align: right;">228.8875</td>
+<td style="text-align: right;">243.87</td>
+<td style="text-align: right;">112.62000</td>
+<td style="text-align: right;">124.87146</td>
+<td style="text-align: right;">6</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">DEPARTMENT OF TRANSPORTATION</td>
+<td style="text-align: right;">0.00</td>
+<td style="text-align: right;">50.00</td>
+<td style="text-align: right;">75.00</td>
+<td style="text-align: right;">125.0000</td>
+<td style="text-align: right;">690.04</td>
+<td style="text-align: right;">99.52878</td>
+<td style="text-align: right;">82.88425</td>
+<td style="text-align: right;">87272</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">TRAFFIC</td>
+<td style="text-align: right;">0.00</td>
+<td style="text-align: right;">65.00</td>
+<td style="text-align: right;">115.00</td>
+<td style="text-align: right;">115.0000</td>
+<td style="text-align: right;">245.79</td>
+<td style="text-align: right;">94.59362</td>
+<td style="text-align: right;">44.47453</td>
+<td style="text-align: right;">12091</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">TRANSIT AUTHORITY</td>
+<td style="text-align: right;">0.00</td>
+<td style="text-align: right;">0.00</td>
+<td style="text-align: right;">75.00</td>
+<td style="text-align: right;">125.0000</td>
+<td style="text-align: right;">190.00</td>
+<td style="text-align: right;">78.00000</td>
+<td style="text-align: right;">82.05181</td>
+<td style="text-align: right;">5</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">DEPARTMENT OF SANITATION</td>
+<td style="text-align: right;">0.00</td>
+<td style="text-align: right;">48.75</td>
+<td style="text-align: right;">65.00</td>
+<td style="text-align: right;">115.0000</td>
+<td style="text-align: right;">115.00</td>
+<td style="text-align: right;">66.25000</td>
+<td style="text-align: right;">45.48351</td>
+<td style="text-align: right;">12</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">LONG ISLAND RAILROAD</td>
+<td style="text-align: right;">0.00</td>
+<td style="text-align: right;">0.00</td>
+<td style="text-align: right;">0.00</td>
+<td style="text-align: right;">0.0000</td>
+<td style="text-align: right;">0.00</td>
+<td style="text-align: right;">0.00000</td>
+<td style="text-align: right;">NA</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">0</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+</section>
+<section id="inferential-statistics" class="level4">
+<h4 class="anchored" data-anchor-id="inferential-statistics">Inferential Statistics</h4>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>anova_model_agency<span class="ot">&lt;-</span> <span class="fu">aov</span>(payment_amount <span class="sc">~</span> agency, <span class="at">data =</span> camera)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div id="tbl-inferential-statistics-1" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-tbl-cap-location="bottom">
+<figure class="quarto-float quarto-float-tbl figure">
+<div aria-describedby="tbl-inferential-statistics-1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(anova_model_agency)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>               Df    Sum Sq Mean Sq F value Pr(&gt;F)    
+agency         16   1063475   66467   10.59 &lt;2e-16 ***
+Residuals   99879 627057911    6278                   
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-tbl" id="tbl-inferential-statistics-1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;2: ANOVA table representing how much variance in payment amount can be explained by the issuing agency.
+</figcaption>
+</figure>
+</div>
+<div id="tbl-inferential-statistics-11" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-tbl-cap-location="bottom">
+<figure class="quarto-float quarto-float-tbl figure">
+<div aria-describedby="tbl-inferential-statistics-11-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">supernova</span>(anova_model_agency)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code> Analysis of Variance Table (Type III SS)
+ Model: payment_amount ~ agency
+
+                                    SS    df        MS      F   PRE     p
+ ----- --------------- | ------------- ----- --------- ------ ----- -----
+ Model (error reduced) |   1063475.474    16 66467.217 10.587 .0017 .0000
+ Error (from model)    | 627057911.207 99879  6278.176                   
+ ----- --------------- | ------------- ----- --------- ------ ----- -----
+ Total (empty model)   | 628121386.681 99895  6287.816                   </code></pre>
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-tbl" id="tbl-inferential-statistics-11-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;3: A clearer version of the previous ANOVA table.
+</figcaption>
+</figure>
+</div>
+</section>
+<section id="report" class="level4">
+<h4 class="anchored" data-anchor-id="report">Report</h4>
+<section id="sum-of-squares---how-much-variance-is-explained" class="level5">
+<h5 class="anchored" data-anchor-id="sum-of-squares---how-much-variance-is-explained">Sum of Squares - How much variance is explained?</h5>
+<ul>
+<li><p>SSagency = 1063435</p></li>
+<li><p>SSerror = 627060364</p></li>
+</ul>
+<p>While there is a considerable amount of variability between agencies, there is much more variability within agencies.</p>
+</section>
+<section id="f-value-and-p-value---is-it-statistically-significant" class="level5">
+<h5 class="anchored" data-anchor-id="f-value-and-p-value---is-it-statistically-significant">F value and P-value - Is it statistically significant?</h5>
+<ul>
+<li><p>F = 10.587</p></li>
+<li><p>P = &lt;2e-16</p></li>
+</ul>
+<p>This is statistically significant (P &lt; 0.05).</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Statistical vs.&nbsp;Practical Significance
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>With a large dataset, even very small differences can produce statistically significant p-values. However, effect sizes (PRE values of 0.1%–1.5%) show that these variables explain very little real-world variation in payment amount.</p>
+</div>
+</div>
+</section>
+<section id="pre---what-proportion-of-variance-is-explained" class="level5">
+<h5 class="anchored" data-anchor-id="pre---what-proportion-of-variance-is-explained">PRE - What proportion of variance is explained?</h5>
+<p>Only about 0.17% of the variance in payment amount is explained by the agency that issued the fine.</p>
+</section>
+</section>
+<section id="interpretation" class="level4">
+<h4 class="anchored" data-anchor-id="interpretation">Interpretation</h4>
+<p>While the findings of variance in this model were found to be statistically significant, they were not found to be practically significant. The issuing agency does explain a proportion of variance in payment amount, but that proportion is only about 0.17%, which is less than 1% of total variance in payment amount. This is definitely not the most significant difference in the real world. I would not recommend the law firm necessarily use this variable in their marketing strategy, because even if they were able to address each agency, that would still only affect total payment amount by less than 1%.</p>
+</section>
+</section>
+</section>
+<section id="plate-state" class="level2">
+<h2 class="anchored" data-anchor-id="plate-state">Plate State</h2>
+<section id="do-drivers-from-different-states-nj-ny-ct-pay-more" class="level3">
+<h3 class="anchored" data-anchor-id="do-drivers-from-different-states-nj-ny-ct-pay-more">Do drivers from different states (NJ, NY, CT) pay more?</h3>
+<section id="visualization-1" class="level4">
+<h4 class="anchored" data-anchor-id="visualization-1">Visualization</h4>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(camera_states, <span class="fu">aes</span>(<span class="at">x =</span> plate_state, <span class="at">y =</span> payment_amount, <span class="at">fill =</span> plate_state)) <span class="sc">+</span> <span class="fu">geom_boxplot</span>() <span class="sc">+</span> </span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Payment Amount Across License Plate States"</span>,</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"License Plate State"</span>,</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Payment Amount in Dollars"</span>) <span class="sc">+</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div id="fig-visualization-2" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-visualization-2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="02-law-firm-analysis_files/figure-html/fig-visualization-2-1.png" class="img-fluid figure-img" width="672">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-visualization-2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;2: The average payment amount issued to NJ drivers, NY drivers, and CT drivers.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="descriptive-statistics-1" class="level4">
+<h4 class="anchored" data-anchor-id="descriptive-statistics-1">Descriptive Statistics</h4>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">favstats</span>(payment_amount <span class="sc">~</span> plate_state, <span class="at">data =</span> camera_states) <span class="sc">%&gt;%</span> <span class="fu">arrange</span>(<span class="fu">desc</span>(mean)) <span class="sc">%&gt;%</span> <span class="fu">kable</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="tbl-descriptive-statistics-2" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-descriptive-statistics-2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;4: Table showing preliminary descriptive statistics such as averages and frequencies to better understand the dataset and what patterns to explore regarding license plate state.
+</figcaption>
+<div aria-describedby="tbl-descriptive-statistics-2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<table class="do-not-create-environment cell caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 17%">
+<col style="width: 5%">
+<col style="width: 4%">
+<col style="width: 10%">
+<col style="width: 5%">
+<col style="width: 10%">
+<col style="width: 13%">
+<col style="width: 13%">
+<col style="width: 8%">
+<col style="width: 11%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">plate_state</th>
+<th style="text-align: right;">min</th>
+<th style="text-align: right;">Q1</th>
+<th style="text-align: right;">median</th>
+<th style="text-align: right;">Q3</th>
+<th style="text-align: right;">max</th>
+<th style="text-align: right;">mean</th>
+<th style="text-align: right;">sd</th>
+<th style="text-align: right;">n</th>
+<th style="text-align: right;">missing</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">NJ</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">50</td>
+<td style="text-align: right;">75</td>
+<td style="text-align: right;">115</td>
+<td style="text-align: right;">682.35</td>
+<td style="text-align: right;">101.5746</td>
+<td style="text-align: right;">89.97170</td>
+<td style="text-align: right;">8654</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">NY</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">50</td>
+<td style="text-align: right;">75</td>
+<td style="text-align: right;">125</td>
+<td style="text-align: right;">690.04</td>
+<td style="text-align: right;">101.0984</td>
+<td style="text-align: right;">80.92892</td>
+<td style="text-align: right;">79527</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">CT</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">50</td>
+<td style="text-align: right;">75</td>
+<td style="text-align: right;">100</td>
+<td style="text-align: right;">276.57</td>
+<td style="text-align: right;">80.6627</td>
+<td style="text-align: right;">46.07849</td>
+<td style="text-align: right;">1457</td>
+<td style="text-align: right;">0</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+</section>
+<section id="inferential-statistics-1" class="level4">
+<h4 class="anchored" data-anchor-id="inferential-statistics-1">Inferential Statistics</h4>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>anova_model_state<span class="ot">&lt;-</span> <span class="fu">aov</span>(payment_amount <span class="sc">~</span> plate_state, <span class="at">data =</span> camera_states)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div id="tbl-inferential-statistics-2" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-tbl-cap-location="bottom">
+<figure class="quarto-float quarto-float-tbl figure">
+<div aria-describedby="tbl-inferential-statistics-2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(anova_model_state)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>               Df    Sum Sq Mean Sq F value Pr(&gt;F)    
+plate_state     2    603090  301545    45.5 &lt;2e-16 ***
+Residuals   89635 593991398    6627                   
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-tbl" id="tbl-inferential-statistics-2-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;5: ANOVA table representing how much variance in payment amount can be explained by the license plate state of the fine receiver.
+</figcaption>
+</figure>
+</div>
+<div id="tbl-inferential-statistics-22" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-tbl-cap-location="bottom">
+<figure class="quarto-float quarto-float-tbl figure">
+<div aria-describedby="tbl-inferential-statistics-22-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">supernova</span>(anova_model_state)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code> Analysis of Variance Table (Type III SS)
+ Model: payment_amount ~ plate_state
+
+                                    SS    df         MS      F   PRE     p
+ ----- --------------- | ------------- ----- ---------- ------ ----- -----
+ Model (error reduced) |    603089.883     2 301544.941 45.504 .0010 .0000
+ Error (from model)    | 593991397.710 89635   6626.780                   
+ ----- --------------- | ------------- ----- ---------- ------ ----- -----
+ Total (empty model)   | 594594487.593 89637   6633.360                   </code></pre>
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-tbl" id="tbl-inferential-statistics-22-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;6: A clearer version of the previous ANOVA table.
+</figcaption>
+</figure>
+</div>
+</section>
+<section id="report-1" class="level4">
+<h4 class="anchored" data-anchor-id="report-1">Report</h4>
+<section id="sum-of-squares---how-much-variance-is-explained-1" class="level5">
+<h5 class="anchored" data-anchor-id="sum-of-squares---how-much-variance-is-explained-1">Sum of Squares - How much variance is explained?</h5>
+<ul>
+<li><p>SSstate = 603061</p></li>
+<li><p>SSerror = 593994009</p></li>
+</ul>
+<p>While there is a considerable amount of variability between states, there is much more variability within states.</p>
+</section>
+<section id="f-value-and-p-value---is-it-statistically-significant-1" class="level5">
+<h5 class="anchored" data-anchor-id="f-value-and-p-value---is-it-statistically-significant-1">F value and P-value - Is it statistically significant?</h5>
+<ul>
+<li><p>F = 45.502</p></li>
+<li><p>P = &lt;2e-16</p></li>
+</ul>
+<p>This is statistically significant (P &lt; 0.05).</p>
+</section>
+<section id="pre---what-proportion-of-variance-is-explained-1" class="level5">
+<h5 class="anchored" data-anchor-id="pre---what-proportion-of-variance-is-explained-1">PRE - What proportion of variance is explained?</h5>
+<p>Only about 0.1% of the variance in payment amount is explained by the states the drivers are from.</p>
+</section>
+</section>
+<section id="interpretation-1" class="level4">
+<h4 class="anchored" data-anchor-id="interpretation-1">Interpretation</h4>
+<p>Again, while the findings of variance in this model were found to be statistically significant, they were not found to be practically significant. The state the driver is from does explain a proportion of variance in payment amount, but that proportion is only about 0.1%, which is even less than the amount that issuing agency explains. This is, again, definitely not a significant difference in the real world. I would not recommend the law firm use this variable in their marketing strategy, because at best, it would only address less than 1% of the variance in payment amount.</p>
+</section>
+</section>
+</section>
+<section id="county" class="level2">
+<h2 class="anchored" data-anchor-id="county">County</h2>
+<section id="do-certain-counties-tend-to-have-higher-payment-amounts" class="level3">
+<h3 class="anchored" data-anchor-id="do-certain-counties-tend-to-have-higher-payment-amounts">Do certain counties tend to have higher payment amounts?</h3>
+<section id="visualization-2" class="level4">
+<h4 class="anchored" data-anchor-id="visualization-2">Visualization</h4>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(camera, <span class="fu">aes</span>(<span class="at">x =</span> county, <span class="at">y =</span> payment_amount, <span class="at">fill =</span> county)) <span class="sc">+</span> <span class="fu">geom_boxplot</span>() <span class="sc">+</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Payment Amount Across Counties"</span>,</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"County"</span>,</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Payment Amount in Dollars"</span>) <span class="sc">+</span></span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div id="fig-visualization-3" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-visualization-3-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="02-law-firm-analysis_files/figure-html/fig-visualization-3-1.png" class="img-fluid figure-img" width="672">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-visualization-3-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;3: The average payment amount issued to each NYC county.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="descriptive-statistics-2" class="level4">
+<h4 class="anchored" data-anchor-id="descriptive-statistics-2">Descriptive Statistics</h4>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">favstats</span>(payment_amount <span class="sc">~</span> county, <span class="at">data =</span> camera) <span class="sc">%&gt;%</span> <span class="fu">arrange</span>(<span class="fu">desc</span>(mean)) <span class="sc">%&gt;%</span> <span class="fu">kable</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="tbl-descriptive-statistics-3" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-descriptive-statistics-3-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;7: Table showing preliminary descriptive statistics such as averages and frequencies to better understand the dataset and what patterns to explore regarding county in which the fine was issued.
+</figcaption>
+<div aria-describedby="tbl-descriptive-statistics-3-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<table class="do-not-create-environment cell caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 5%">
+<col style="width: 3%">
+<col style="width: 9%">
+<col style="width: 7%">
+<col style="width: 9%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 7%">
+<col style="width: 10%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">county</th>
+<th style="text-align: right;">min</th>
+<th style="text-align: right;">Q1</th>
+<th style="text-align: right;">median</th>
+<th style="text-align: right;">Q3</th>
+<th style="text-align: right;">max</th>
+<th style="text-align: right;">mean</th>
+<th style="text-align: right;">sd</th>
+<th style="text-align: right;">n</th>
+<th style="text-align: right;">missing</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Richmond County</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">50</td>
+<td style="text-align: right;">125</td>
+<td style="text-align: right;">180.0</td>
+<td style="text-align: right;">250.00</td>
+<td style="text-align: right;">114.53669</td>
+<td style="text-align: right;">77.55385</td>
+<td style="text-align: right;">1349</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Kings County</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">50</td>
+<td style="text-align: right;">75</td>
+<td style="text-align: right;">115.0</td>
+<td style="text-align: right;">690.04</td>
+<td style="text-align: right;">110.90567</td>
+<td style="text-align: right;">126.20960</td>
+<td style="text-align: right;">16108</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Bronx County</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">65</td>
+<td style="text-align: right;">75</td>
+<td style="text-align: right;">152.5</td>
+<td style="text-align: right;">245.64</td>
+<td style="text-align: right;">100.38053</td>
+<td style="text-align: right;">67.32482</td>
+<td style="text-align: right;">244</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">New York County</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">50</td>
+<td style="text-align: right;">75</td>
+<td style="text-align: right;">115.0</td>
+<td style="text-align: right;">281.80</td>
+<td style="text-align: right;">97.64833</td>
+<td style="text-align: right;">62.54609</td>
+<td style="text-align: right;">23468</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Queens County</td>
+<td style="text-align: right;">0</td>
+<td style="text-align: right;">50</td>
+<td style="text-align: right;">50</td>
+<td style="text-align: right;">100.0</td>
+<td style="text-align: right;">283.03</td>
+<td style="text-align: right;">83.49201</td>
+<td style="text-align: right;">60.07357</td>
+<td style="text-align: right;">17357</td>
+<td style="text-align: right;">0</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+</section>
+<section id="inferential-statistics-2" class="level4">
+<h4 class="anchored" data-anchor-id="inferential-statistics-2">Inferential Statistics</h4>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>anova_model_county<span class="ot">&lt;-</span> <span class="fu">aov</span>(payment_amount <span class="sc">~</span> county, <span class="at">data =</span> camera)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div id="tbl-inferential-statistics-3" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-tbl-cap-location="bottom">
+<figure class="quarto-float quarto-float-tbl figure">
+<div aria-describedby="tbl-inferential-statistics-3-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(anova_model_county)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>               Df    Sum Sq Mean Sq F value Pr(&gt;F)    
+county          4   6694742 1673685   233.1 &lt;2e-16 ***
+Residuals   58521 420213429    7181                   
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+41370 observations deleted due to missingness</code></pre>
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-tbl" id="tbl-inferential-statistics-3-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;8: ANOVA table representing how much variance in payment amount can be explained by the county in which the fine was issued.
+</figcaption>
+</figure>
+</div>
+<div id="tbl-inferential-statistics-33" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-tbl-cap-location="bottom">
+<figure class="quarto-float quarto-float-tbl figure">
+<div aria-describedby="tbl-inferential-statistics-33-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">supernova</span>(anova_model_county)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code> Analysis of Variance Table (Type III SS)
+ Model: payment_amount ~ county
+
+                                    SS    df          MS       F   PRE     p
+ ----- --------------- | ------------- ----- ----------- ------- ----- -----
+ Model (error reduced) |   6694741.856     4 1673685.464 233.086 .0157 .0000
+ Error (from model)    | 420213428.932 58521    7180.558                    
+ ----- --------------- | ------------- ----- ----------- ------- ----- -----
+ Total (empty model)   | 426908170.788 58525    7294.458                    </code></pre>
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-tbl" id="tbl-inferential-statistics-33-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;9: A clearer version of the previous ANOVA table.
+</figcaption>
+</figure>
+</div>
+</section>
+<section id="report-2" class="level4">
+<h4 class="anchored" data-anchor-id="report-2">Report</h4>
+<section id="sum-of-squares---how-much-variance-is-explained-2" class="level5">
+<h5 class="anchored" data-anchor-id="sum-of-squares---how-much-variance-is-explained-2">Sum of Squares - How much variance is explained?</h5>
+<ul>
+<li><p>SScounty = 6694742</p></li>
+<li><p>SSerror = 420213429</p></li>
+</ul>
+<p>Again, while there is a considerable amount of variability between counties, there is much more variability within counties.</p>
+</section>
+<section id="f-value-and-p-value---is-it-statistically-significant-2" class="level5">
+<h5 class="anchored" data-anchor-id="f-value-and-p-value---is-it-statistically-significant-2">F value and P-value - Is it statistically significant?</h5>
+<ul>
+<li><p>F = 233.1</p></li>
+<li><p>P = &lt;2e-16</p></li>
+</ul>
+<p>This is statistically significant (p &lt; 0.05).</p>
+</section>
+<section id="pre---what-proportion-of-variance-is-explained-2" class="level5">
+<h5 class="anchored" data-anchor-id="pre---what-proportion-of-variance-is-explained-2">PRE - What proportion of variance is explained?</h5>
+<p>About 1.5% of the variance in payment amount is explained by the county the fine was issued in.</p>
+</section>
+</section>
+<section id="interpretation-2" class="level4">
+<h4 class="anchored" data-anchor-id="interpretation-2">Interpretation</h4>
+<p>Again, while the findings of variance in this model were found to be statistically significant, they were not found to be very practically significant. The county does explain a proportion of variance in payment amount, but that proportion is only about 1.5%. Though not a high percentage of variance explained by any means, it is the highest percentage we have found thus far! It is also likely not very significant of a difference in the real world. I would also not recommend this as the best variable for the firm to use in their marketing strategy, since it would only address 1.5% of the variance in payment amount.</p>
+</section>
+</section>
+<section id="final-statement" class="level3">
+<h3 class="anchored" data-anchor-id="final-statement">Final Statement</h3>
+<p>If the law firm only had these three variables (agency, state, or county) as options to use in their marketing strategy, I would suggest prioritizing county since it accounts for the largest amount of variance in payment amount out of all three variables.</p>
+</section>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

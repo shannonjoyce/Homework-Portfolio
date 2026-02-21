@@ -1,0 +1,345 @@
+---
+title: "Assignment 7 - Wage Analytics"
+author: "Shannon Joyce"
+---
+
+## Introduction
+
+The Wage Analytics Division (WAD) has hired me as their new Data Scientist. My assignment is to determine whether demographic and employment characteristics can be used to predict whether a worker earns a high or low wage.
+
+Using the Wage dataset from the ISLR package, I will create a binary wage category, explore statistical relationships between variables, and build a logistic regression model capable of predicting wage level using demographic, job, and health-related information.
+
+My analysis will help the company understand which characteristics are associated with higher earnings and evaluate how well a predictive model performs on unseen data.
+
+```{r}
+#| label: load-packages-7
+#| message: false
+#| warning: false
+
+library(ISLR)
+library(tidyverse)
+library(ggthemes)
+library(skimr)
+library(caret)
+library(pROC)
+library(mosaic)
+library(pscl)
+library(car)
+library(supernova)
+library(lsr)
+library(caTools)
+library(knitr)
+```
+
+## Step 1 – Create the WageCategory Variable
+
+```{r}
+#| label: load-data-7
+
+data(Wage)
+```
+
+```{r}
+#| label: tbl-see-data
+#| tbl-cap: "Wage Dataset (first 5 rows)."
+
+Wage %>% head(n=5) %>% kable()
+```
+
+```{r}
+#| label: create-wage-category
+
+median_wage<- median(Wage$wage)
+
+Wage <- Wage %>% mutate(
+    WageCategory = case_when(
+      wage > median_wage ~ "High",
+      wage <= median_wage ~ "Low"),
+    WageCategory = as.factor(WageCategory)
+  )
+```
+
+```{r}
+#| label: tbl-new-dataset
+#| tbl-cap: "Wage Dataset Including Wage Category (first 5 rows)."
+
+Wage %>% head(n=5) %>% kable()
+```
+
+## Step 2 – Data Cleaning
+
+```{r}
+#| label: cleaning-data-7
+
+colnames(Wage)
+
+Wage <- Wage %>%
+  mutate(
+    across(
+      c("maritl", "race", "education", "region", "jobclass", "health", "health_ins"), 
+      ~substring(.x, 4)
+    )
+  )
+```
+
+```{r}
+#| label: tbl-clean-dataset
+#| tbl-cap: "Cleaned Wage Dataset (first 5 rows)."
+
+Wage %>% head(n=5) %>% kable()
+```
+
+## Step 3 – Classical Statistical Tests
+
+### A) T-Test
+
+```{r}
+#| label: t-test-7
+
+t.test(age ~ WageCategory, data = Wage)
+```
+
+-   Mean age for high earners: 45 years old
+
+-   Mean age for low earners: 40 years old
+
+-   t-statistic: 10.9
+
+-   df: 2855
+
+-   p-value \< 2.2e-16
+
+Age seems to differ between high earners and low earners. We have a high t-statistic and a very small p-value, suggesting that we are very confident in a large difference between the ages in both wage categories.
+
+### B) ANOVA
+
+```{r}
+#| label: tbl-anova-7
+#| tbl-cap: "Table showing preliminary descriptive statistics such as averages and frequencies to better understand the dataset and what patterns to explore regarding wage and education."
+
+favstats(wage ~ education, data = Wage) %>% arrange(desc(mean)) %>% kable()
+```
+
+```{r}
+#| label: anova-model-7
+
+anova_model_ed<- aov(wage ~ education, data = Wage)
+```
+
+```{r}
+#| label: tbl-anova-model-7
+#| tbl-cap: "ANOVA table representing how much variance in wage can be explained by level of education."
+#| tbl-cap-location: bottom
+summary(anova_model_ed)
+```
+
+```{r}
+#| label: tbl-anova-model-77
+#| tbl-cap: "A clearer version of the previous ANOVA table."
+#| tbl-cap-location: bottom
+
+supernova(anova_model_ed)
+```
+
+-   F-statistic: 229.81
+
+-   df: 2999
+
+-   p-value \< 2e-16
+
+With a very large F-statistic and a very small p-value, we can conclude that the variation in wages between education levels is statistically significant. Also, our PRE tells us that education level accounts for 23% of variance in wages.
+
+### C) Chi-Square/Association Test
+
+```{r}
+#| label: contingency-table
+
+cont_table<- table(Wage$race, Wage$WageCategory)
+```
+
+```{r}
+#| label: tbl-contingency-table
+#| tbl-cap: "A contingency table representing the number of people in each wage category grouped by race."
+
+cont_table %>% kable()
+```
+
+```{r}
+#| label: association-test
+
+Wage$race<- as.factor(Wage$race)
+str(Wage$race)
+
+associationTest(~ WageCategory + race, data = Wage)
+```
+
+-   χ²: 43.8
+
+-   df: 3
+
+-   p-value \< 0.001
+
+-   Cramer’s V: 0.121
+
+When comparing our observed and expected values, we see that White people performed as expected. A slightly higher number of Asian people earned higher wages than expected, and a slightly higher number of Black people earned lower wages than expected. Additionally, those who marked their race as "Other" tended to earn less than expected.
+
+With a large chi-squared value and a small p-value, we can conclude that the relationship between race and wage category is statistically significant. However, with such a small effect size, the relationship is weak and we cannot assume that race itself plays much of a role in determining wage category.
+
+## Step 4 – Logistic Regression Model
+
+### Predictive Model
+
+```{r}
+#| label: predictive-model
+
+set.seed(42)
+sample <- sample.split(Wage$WageCategory, SplitRatio = 0.7)
+training_data <- subset(Wage, sample == TRUE)
+test_data <- subset(Wage, sample == FALSE)
+```
+
+### Model Specification
+
+```{r}
+#| label: model-specification
+
+train_model <- glm(WageCategory ~ age + maritl + race + education + jobclass +                       health + health_ins,
+                   family = "binomial", data = training_data)
+```
+
+### Logistic Regression Output
+
+```{r}
+#| label: logreg-output
+
+summary(train_model)
+```
+
+### Odds Ratio
+
+```{r}
+#| label: odds-ratio
+
+exp(coef(train_model))
+```
+
+The predictors that matter most in predicting wage category is age, marital status, education, and health insurance status. Specifically, being older, married, having some college experience, a college degree, or an advanced degree, and having health insurance makes someone much less likely to earn a lower wage. Because of the fact that my model considers the positive outcome to be "Low" wage, all of these specific factors have a negative relationship with wage category (meaning they are more likely to earn a higher wage).
+
+Having an advanced degree had the strongest effect on predicting higher wage, followed by having a college degree, then some college experience, then having active health insurance, being married, and finally older age with the smallest (but still statistically significant) effect size.
+
+Health insurance status surprised me the most - not that it is shocking that people with higher wages tend to have health insurance, but it seems like (in my experience) many lower wage jobs still offer some sort of health insurance, If anything, I thought that it would have been a very weak predictor compared to the other variables.
+
+## Step 5 – Model Evaluation on Test Data
+
+```{r}
+#| label: mcfadden
+
+pR2(train_model)["McFadden"]
+```
+
+This score tells us that our model has a good fit.
+
+```{r}
+#| label: tbl-varimp
+#| tbl-cap: "Table representing contributions of each predictor variable to the model's predictive accuracy"
+
+varImp(train_model) %>% arrange(desc(Overall)) %>% kable()
+```
+
+Education (namely College Grad & Advanced Degree) and health insurance are the strongest predictors of having a higher wage.
+
+```{r}
+#| label: tbl-vif
+#| tbl-cap: "A table representing Variance Inflation Factor (VIF) of each variable."
+
+vif(train_model) %>% kable()
+```
+
+Thankfully, our model shows no colinearity.
+
+### Predicted Probabilities & Classes
+
+```{r}
+#| label: predicted-probs-and-classes
+
+test_data$pred_prob <- predict(train_model, newdata = test_data, type = "response")
+test_data$pred_class <- ifelse(test_data$pred_prob > 0.5, "Low", "High") %>% as.factor()
+```
+
+```{r}
+#| label: tbl-predicted-probs-classes
+#| tbl-cap: "This table represents the test data (based on the original data) and our model's predictions about each person's wage category."
+
+test_data %>% head(n=10) %>% kable()
+```
+
+### Confusion Matrix
+
+```{r}
+#| label: confusion-matrix-7
+
+conf_matrix <- confusionMatrix(test_data$pred_class, test_data$WageCategory, positive = "Low")
+conf_matrix
+```
+
+-   Accuracy: 0.72
+    -   The model accurately predicted the correct wage category 72% of the time.
+-   Sensitivity: 0.75
+    -   The model accurately predicted low wage earners 75% of the time.
+-   Specificity: 0.70
+    -   The model accurately predicted high earners 70% of the time.
+-   Balanced Accuracy: 0.72
+    -   Our balanced accuracy shows us that our observed data is likely pretty balanced, since the balanced accuracy rate is the same as our regular accuracy rate. When we run table(Wage\$WageCategory), we can see that our data is very balanced (\~1500 per category).
+
+### ROC Curve
+
+```{r}
+#| label: roc-obj
+#| message: false
+#| warning: false
+
+roc_obj <- roc(test_data$WageCategory, test_data$pred_prob, levels = c("Low", "High"))
+```
+
+```{r}
+#| label: fig-roc-obj
+#| message: false
+#| warning: false
+#| fig-cap: "A graph representing the model's sensitivity and specificity in wage category predictions."
+
+plot(roc_obj, col = "darkblue", lwd = 2,
+     main = "ROC Curve – Logistic Regression")
+```
+
+### Area Under the Curve
+
+```{r}
+#| label: area-under-curve
+
+auc(roc_obj)
+```
+
+```{r}
+#| label: fig-prediction-probability
+#| fig-cap: "A box plot representing the probability that two randomly chosen people will have their wages correctly predicted."
+
+ggplot(test_data, aes(x = WageCategory, y = pred_prob, fill = WageCategory)) +
+  geom_boxplot(alpha = 0.7) +
+  labs(title = "Predicted Probability of Wage Category",
+       x = "Actual Wage Category", y = "Predicted Probability") +
+  theme_minimal(base_size = 13)
+```
+
+Our AUC is 0.81 - this tells us that our model has very strong discriminative power and can accurately separate between high wage and low wages.
+
+The model identifies high earners at a rate of 70%, and it identifies low earners at a rate of 75%. This model performs much better than the 'No Information Rate' performance, which is accurate about 51% of the time (0.72 \> 0.51). So, this model is definitely better at predicting outcomes than guessing.
+
+::: {.callout-important}
+## Model Performance
+
+The key question is whether or not the model makes good predictions. With 72% accuracy and an AUC of 0.81, the model performs well on unseen data.
+:::
+
+## Step 6 – Final Interpretation
+
+Based on all of the performed analyses, multiple variables were found to have a meaningful relationship with wage category. Specifically, a t-test showed a highly significant difference in the mean age of high earners (45 years) versus low earners (40 years). The ANOVA showed that education level is a statistically significant predictor of wages, accounting for 23% of the variance. Further, a chi-squared test indicated a statistically significant but weak association between race and wage category, suggesting that other factors likely play a larger role in determining wage category. The logistic regression model was made to predict wage category (Low vs. High) and identified multiple significant predictors. The summary(train_model) output suggested that age, marital status, education level, and health insurance status were the most impactful variables. Specifically, being older, having a college or advanced degree, being married, and having health insurance were all associated with a lower likelihood of earning a low wage. The strongest predictors of a high wage were having a college or advanced degree and having health insurance, as shown by the variable importance analysis. Evaluating the model's performance had strong results. The model had an overall accuracy of 72% and a balanced accuracy of 72%, indicating it is effective at predicting wage category for both high and low earners. This model performs significantly better than the "No Information Rate," which was approximately 51%. The model's discriminative power was represented by a very high AUC (Area Under the Curve) of 0.81, which suggests the model can accurately distinguish between high and low wage earners 81% of the time. The Confusion Matrix also showed that the model performed slightly better at predicting low wage earners (sensitivity of 75%) than high wage earners (specificity of 70%). If this analysis were to be repeated, I would consider adding several new variables to potentially improve the model's predictive power. Relevant additions could include a variable of specific job types or titles (instead of a broad jobclass), and location data, as different regions may result in different wages. Given the weak relationship found in the chi-squared test and the low variable importance, I would remove race from the model to make it more parsimonious. Ideally, these additions and removals would help to capture more of the complex factors that influence wage outcomes.

@@ -1,0 +1,326 @@
+---
+title: "Assignment 5 - Florida Crime Analytics"
+author: "Shannon Joyce"
+---
+
+## Introduction
+
+I have been hired by the Florida Police Department (FPD) as their new Data Analyst. I have been tasked with a mission to uncover what socioeconomic factors are most strongly associated with rising crime rates across Florida counties. The FPD is particularly interested in whether income, education, or urbanization play the largest role in explaining differences in crime rates. My analysis will help inform statewide prevention strategies, resource allocation, and community outreach efforts.
+
+```{r}
+#| label: load-packages-5
+#| message: false
+#| warning: false
+
+library(readxl)
+library(tidyverse)
+library(ggplot2)
+library(ggthemes)
+library(skimr)
+library(mosaic)
+library(plotly)
+library(maps)
+library(ggcorrplot)
+library(GGally)
+library(knitr)
+library(ppcor)
+library(AICcmodavg)
+```
+
+## Step 1 – Loading and Preparing the Data
+
+```{r}
+#| label: load-and-prep-data
+
+florida_crime<- read_xlsx("Florida County Crime Rates.xlsx")
+
+florida_crime<- florida_crime %>% 
+  rename(
+    "Crime" = "C",
+    "Income" = "I",
+    "HighSchoolGrad" = "HS",
+    "UrbanPop" = "U"
+  )
+
+florida_crime <- florida_crime %>%
+  mutate(
+    County = str_to_title(County)
+    )
+```
+
+```{r}
+#| label: tbl-florida-crime
+#| tbl-cap: "Florida Crime Data Summary."
+
+skim(florida_crime) %>% kable()
+```
+
+What we did here:
+
+1\) loaded the data
+
+2\) made the columns 'C', 'I', "HS', and 'U' readable
+
+3\) standardized the 'County' rows to have only the first letter capitalized instead of the entire name
+
+4\) ran a quick summary on the data
+
+## Step 2 – Exploratory Data Analysis
+
+```{r}
+#| label: tbl-descriptive-statistics-5
+#| tbl-cap: "Table showing preliminary descriptive statistics such as averages to better understand the dataset and what patterns to explore regarding county, crime, income, high school graduation rate, and urban population rate."
+
+summary(florida_crime) %>% kable()
+```
+
+### Plot 1: Crime Rate by Income in Florida Counties
+
+```{r}
+#| label: creating-plot-1
+
+p1<- ggplot(florida_crime, aes(x = Income, y = Crime)) +
+  geom_point() +
+  geom_smooth(method = "lm") + 
+  labs(
+    title = "Crime Rate by Income in Florida Counties",,
+    x = "Median Income (in thousands)", y = "Crime (per 1,000 residents)") +
+  theme(legend.position = "none") +
+    theme_economist() + 
+  scale_colour_economist()
+```
+
+```{r}
+#| label: fig-plot-1-5
+#| message: false
+#| warning: false
+#| fig-cap: "A scatterplot representing the variation in crime rate by the median household income in Florida counties."
+
+p1
+```
+
+Our first plot shows us that crime happens more often in counties with higher median income. This was a bit unexpected!
+
+### Plot 2: Crime Rate by Urban Population Percentage in Florida Counties
+
+```{r}
+#| label: creating-plot-2-5
+
+florida_crime_group <- florida_crime %>%
+  mutate(
+    UrbanBin= case_when(
+    UrbanPop <= 30 ~ "Low",
+    UrbanPop > 30 & UrbanPop <= 60 ~ "Medium",
+    UrbanPop > 60 & UrbanPop <= 90 ~ "High",
+    UrbanPop > 90 ~ "Very High"))
+
+florida_crime_group$UrbanBin<- factor(florida_crime_group$UrbanBin,
+                         levels = c("Low", "Medium", "High", "Very High"))
+```
+
+```{r}
+#| label: fig-plot-2-5
+#| message: false
+#| warning: false
+#| fig-cap: "A boxplot representing the variation in crime rate by the percentage of urban population in Florida counties."
+
+ggplot(florida_crime_group, aes(x = UrbanBin, y = Crime)) +
+  geom_boxplot() +
+  labs(
+    title = "Crime by Urban Population in Florida Counties",
+    x = "Urban Population (%)", y = "Crime (per 1,000 residents)") +
+   theme_economist() + 
+  scale_colour_economist()
+```
+
+When urban population percentage is grouped into bins, we can see that more crime occurs in counties with a greater urban population.
+
+### Heat Map: Crime in Florida Counties
+
+```{r}
+#| label: creating-heat-map
+#| message: false
+#| warning: false
+
+florida_map<- map_data("county", "florida") %>%
+  rename(County = subregion)
+
+crime_map<- florida_crime %>%
+  mutate(County = tolower(County))
+
+crime_map <- left_join(crime_map,florida_map, by="County")
+
+crime_map<- crime_map %>% dplyr::select(1:2,6:8)
+
+p3<- ggplot(data = crime_map, aes(x = long, y = lat, group = group, fill = Crime)) +
+  geom_polygon(color = "white", linewidth = 0.2) + 
+  coord_fixed(1.3) +
+  scale_fill_viridis_c(option = "magma", name = "Crimes per 1,000 residents") + 
+  labs(
+    title = "Florida County Crime Rates",
+    ) +
+  theme_void()
+```
+
+```{r}
+#| label: fig-heat-map
+#| fig-cap: "An interactive choropleth map representing the crime rate in each county in Florida. The lighter the county's color, the higher the crime rate."
+
+ggplotly(p3)
+```
+
+:::{.callout-tip}
+## Check this out!
+
+If you hover over a county with your mouse on the choropleth map, it shows the number of crimes per 1,000 residents. Try it for yourself!
+:::
+
+## Step 3 – Correlation Analysis
+
+```{r}
+#| label: florida-correlation-setup
+
+florida_numeric<- florida_crime %>% dplyr::select(2:5)
+florida_cor<- cor(florida_numeric)
+```
+
+```{r}
+#| label: tbl-florida-correlation
+#| tbl-cap: "A correlation table exploring the associations between each variable."
+
+kable(florida_cor)
+```
+
+Wow, each variable has a substantial relationship with crime! Our correlation matrix shows that of the three variables (Income, HighSchoolGrad, and UrbanPop), Urban Population has the strongest relationship with Crime. Each of the three variables is positively correlated with Crime. Income and HighSchoolGrad have a moderate relationship with Crime, while UrbanPop is strong.
+
+Let's visualize it:
+
+```{r}
+#| label: fig-correlation-matrix-5
+#| message: false
+#| warning: false
+#| fig-cap: "A correlation matrix exploring the relationships between crime rates, median incomes, high school graduation rates, and urban population rates of all counties in Florida."
+
+ggcorrplot(florida_cor, lab = TRUE, type = "lower") +
+    labs(title = "Correlation Matrix: Crime, Income, High School Graduate Rate & Urban Population Rate")
+```
+
+```{r}
+#| label: fig-correlation-matrix-5-2
+#| message: false
+#| warning: false
+#| fig-cap: "Another representation of the previous correlation matrix. The points in the scatterplots represent the actual counties, while the lines in the line graphs represent the frequency distributions."
+
+ggpairs(florida_crime[, c("Crime", "Income", "HighSchoolGrad", "UrbanPop")])
+```
+
+## Step 4 – Building Regression Models
+
+### Crime \~ Income
+
+```{r}
+#| label: model-1
+
+m1<- lm(Crime ~ Income, data=florida_crime)
+summary(m1)
+AIC(m1)
+```
+
+-   Direction: Positive
+
+-   Strength: Moderate (R\^2=0.18)
+
+-   Statistically significant (p\<0.05)
+
+Income accounts for \~18% of variability in crime. For each \$1000 increase in average income, the crime rate rises by 2.6 points. Both the relationship and model are statistically significant.
+
+### Crime \~ High School Graduation Rate (%)
+
+```{r}
+#| label: model-2
+
+m2<- lm(Crime ~ HighSchoolGrad, data=florida_crime)
+summary(m2)
+AIC(m2)
+```
+
+-   Direction: Positive
+
+-   Strength: Moderate (R\^2=0.21)
+
+-   Statistically significant (p\<0.05)
+
+High school graduation rate accounts for \~21% of variability in crime. For each 1% increase in graduation rate, the crime rate increases by 1.5 points. Both the relationship and model are statistically significant.
+
+### Crime \~ Urban Population Rate (%)
+
+```{r}
+#| label: model-3
+
+m3<- lm(Crime ~ UrbanPop, data=florida_crime)
+summary(m3)
+AIC(m3)
+```
+
+-   Direction: Positive
+
+-   Strength: Moderate-Strong (R\^2=0.45)
+
+-   Statistically significant (p\<0.05)
+
+Urban population percentage accounts for 45% of variance in crime. For every 1% increase in urban population, the crime rate increases by \~0.6 points. Both the relationship and model are statistically significant.
+
+### Crime \~ Income + UrbanPop
+
+```{r}
+#| label: model-4
+
+m4 <- lm(Crime ~ Income + UrbanPop, data = florida_crime)
+summary(m4)
+AIC(m4)
+```
+
+This model shows us that when accounting for urban population, income seems to not have influence over the crime rate.
+
+### Crime \~ Income + HighSchoolGrad
+
+```{r}
+#| label: model-5
+
+m5 <- lm(Crime ~ Income + HighSchoolGrad, data = florida_crime)
+summary(m5)
+AIC(m5)
+```
+
+This model shows that income and graduation rate account for \~20% of the variance in crime, which is not much larger than either of the factors alone. This shows that neither income or graduation rate are driving factors in crime rate.
+
+### Crime \~ HighSchoolGrad + UrbanPop + Income
+
+```{r}
+#| label: model-6
+
+m6 <- lm(Crime ~ HighSchoolGrad + UrbanPop + Income, data = florida_crime)
+summary(m6)
+AIC(m6)
+```
+
+This model includes all three variables, but still only accounts for \~44% of variance in crime. This is almost the same amount that urban population predicts. With the other models showing that income and graduation rate are not that influential, as well as the urban population rate alone accounting for 45% of variance, we can see that urban population is the driving factor behind crime rate.
+
+### AIC
+
+```{r}
+#| label: tbl-aic-5
+#| tbl-cap: "A table that shows the Akaike Information Criterion (AIC) per model."
+
+AIC(m1,m2,m3,m4,m5,m6) %>% arrange(AIC) %>% kable()
+```
+
+Urban population is easily the most influential predictor in crime rate! The model 'm3' (Crime \~ Uban Population) is the best model as it balances accuracy and simplicity, as the list of AICs reflects.
+
+## Step 5 - Communicate Your Findings
+
+Chief,
+
+The model that best predicts crime rates in Florida counties is Crime \~ UrbanPop. Urban population rate is easily the most influential predictor, explaining 45% of variance in crime alone. The PD should be focusing their efforts towards resources like affordable housing programs, rehabilitative programs, decriminalizing drug use, and reducing homelessness. A limitation in my analysis is that there were only three main variables that I had to work with; I am sure there are other demographic information that could further explain the crime rate.
+
+Shannon Joyce

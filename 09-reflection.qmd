@@ -1,0 +1,20 @@
+---
+title: "Final Reflection"
+author: Shannon Joyce
+---
+
+At the beginning of this year, I had very little experience with R, so compiling this portfolio really highlights how much my skills have developed. Early on, most of my effort went into understanding the basics of R and getting comfortable working in RStudio. By the end of the course, I was able to complete full analyses from data cleaning, to statistical modeling and interpretation, and finally to clear communication of results.
+
+A major skill I developed was working with real datasets, which typically required cleaning and restructuring before analysis. I learned how to import data, inspect variables, recode values, deal with missing data, and reshape data into neater formats. These steps were essential for making sure the analyses I ran were appropriate and accurate.
+
+As the semester progressed, I became more comfortable using Tidyverse to manipulate data efficiently. I regularly used filtering, grouping, summarizing, and joining to prepare datasets for analysis. This made it easier to focus on the research questions and assignments rather than just fixing dataset issues.
+
+I also gained substantial experience with statistical analyses in R. I ran t-tests to compare group means, ANOVAs to examine differences across multiple groups, and correlation matrices to explore relationships between variables. These analyses helped me move beyond descriptive statistics and start testing hypotheses. I learned how to run all sorts of tests in R and accurateoy interpret the results.
+
+In addition, I worked with predictive models, including regression-based approaches, to examine how well certain variables could explain or predict outcomes. Building these models helped me understand how multiple variables work together and how to evaluate model results rather than focusing on a single statistic or variable.
+
+Throughout these assignments, I learned how to clearly explain statistical results in plain language, connecting the numbers back to the original question. This made the analyses more meaningful and easier to communicate.
+
+Alongside statistical testing, I improved my data visualization skills using ggplot2, creating plots that supported and visualized my statistical findings. I also learned how to organize all of this work into R Markdown documents, combining code, output, and written explanations into a single, shareable document.
+
+Finally, creating and publishing a Shiny app showed me how data can be presented in a more interactive way. Overall, this course helped me develop a strong foundation in data analysis using R, from data preparation to statistical modeling and communication. I now feel confident continuing to build on these skills in future work.

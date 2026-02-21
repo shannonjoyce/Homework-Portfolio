@@ -1,0 +1,224 @@
+---
+title: "Assignment 1 - NYC Shooting Insights"
+author: "Shannon Joyce"
+---
+
+## Introduction
+
+I have been tasked with cleaning and analyzing NYC shooting data from the past 19 years. Using Tidyverse, I created insights to understand who the most common perpetrators and victims are, the frequency of and deaths from shootings over the years, as well as table summaries about the shootings.
+
+```{r}
+#| label: loading-libraries
+#| message: false
+#| warning: false
+
+library(tidyverse)
+library(lubridate)
+library(stringr)
+library(tidyr)
+library(ggplot2)
+library(httr)
+library(knitr)
+library(readr)
+```
+
+## Loading the Dataset
+
+```{r}
+#| label: load-dataset-1
+#| message: false
+#| warning: false
+
+shooting_data <- read_csv("NYPD_Shooting_Incident_Data__Historic__20250910 (1).csv")
+```
+
+```{r}
+#| label: tbl-looking-at-dataset-1
+#| tbl-cap: "NYC Shooting Incident Data (first 5 rows)."
+
+shooting_data %>% head(n=5) %>% kable()
+```
+
+This code allowed me to upload this dataset from my computer into R. Now, I can start working with it.
+
+:::{.callout-note}
+## Change in Data Source
+
+This assignment was originally created by using an API to pull this public dataset directly from NYCOpenData (https://opendata.cityofnewyork.us/). This dataset has since been removed from their website, and a previously downloaded version of this dataset has been applied to this R script instead.
+:::
+
+## Data Cleaning
+
+```{r}
+#| label: data-cleaning1
+#| message: false
+
+shooting_data_new <- shooting_data %>%
+  mutate(
+    PERP_AGE_GROUP = na_if(
+      PERP_AGE_GROUP, "(null)"
+      )
+    )
+shooting_data_new <- shooting_data_new %>%
+  mutate(
+     LOCATION_DESC= na_if(
+      LOCATION_DESC, "(null)"
+      )
+    )
+shooting_data_new <- shooting_data_new %>%
+  mutate(
+    PERP_SEX = na_if(
+      PERP_SEX, "(null)"
+      )
+    )
+shooting_data_new <- shooting_data_new %>%
+  mutate(
+    PERP_RACE = na_if(
+      PERP_RACE, "(null)"
+      )
+    )
+
+sum(is.na(
+  shooting_data_new$PERP_AGE_GROUP)
+  )
+shooting_data_new <- shooting_data_new %>% select(1:16)
+shooting_data_2 <- shooting_data_new %>% filter(!is.na(PERP_AGE_GROUP))
+```
+
+First, I changed all **(null)** values and made them ***NA***, that way they can be recognized when removing all rows that had ***NA*** values. I removed all ***NA*** values from the column **perp_age_group** in order to filter out rows that we don't have enough information on.
+
+```{r}
+#| label: data-cleaning2
+
+shooting_data_2 <- shooting_data_2 %>% separate(
+  col = OCCUR_TIME,
+  into = c("Hour","Minute","Second"),
+  sep = ":",
+)
+
+shooting_data_2 <- shooting_data_2 %>% mutate(Hour = as.numeric(Hour))
+#and now...
+shooting_data_2 <- shooting_data_2 %>%
+  mutate(
+    time_of_day = case_when(
+      Hour >= 3 & Hour < 12  ~ "Morning",
+      Hour >= 12 & Hour < 18 ~ "Afternoon",
+      Hour >= 18 | Hour < 3 ~ "Night"
+    )
+  )
+
+shooting_data_clean <- shooting_data_2 %>% select(1:19)
+```
+
+Next, I broke up the **occur_time** column into **Hour**, **Minute**, and **Second** columns. I used the **Hour** column to create a **time_of_day** column that specifies whether the shooting happened in the morning, afternoon, or night.
+
+```{r}
+#| label: data-cleaning3
+
+shooting_data_clean <- shooting_data_clean %>% separate(
+  col = OCCUR_DATE,
+  into = c("Year","Month","Day"),
+  sep = "/",
+)
+shooting_data_clean$Day <- sub("T.*", "", shooting_data_clean$Day)
+```
+
+Finally, I had to break up the **occur_date** column into **Month**, **Day**, and **Year** columns in order to run some of the insights and graphs that I plan on doing.
+
+## Insights
+
+### Insight 1
+
+```{r}
+#| label: tbl-insights-1
+#| tbl-cap: "Table representing the total count of perpetrators from each sex. F = Female, M = Male, and U = Unknown."
+
+shooting_data_clean %>% count(PERP_SEX) %>% kable()
+```
+
+This table shows us that almost four times the amount of shootings have been committed by men compared to women.
+
+### Insight 2
+
+```{r}
+#| label: tbl-insights-2
+#| tbl-cap: "Table representing the total count of perpetrator sex/victim sex combinations. F = Female, M = Male, and U = Unknown."
+
+shooting_data_clean %>% count(PERP_SEX,VIC_SEX) %>% arrange(desc(n)) %>% kable()
+```
+
+In the last 19 years, males have been the most common perpetrators as well as the most common victims. Female perpetrators have shot male victims more than they shot female victims.
+
+## Tables and Graphs
+
+### Graph 1
+
+```{r}
+#| label: setting-up-figs
+
+shooting_by_time_of_day <- shooting_data_clean %>% 
+  group_by(time_of_day) %>% 
+  dplyr::summarize(total = n())
+```
+
+```{r}
+#| label: fig-graph-1
+#| fig-cap: "Total number of shootings in NYC grouped by morning, afternoon, and night."
+
+ggplot(shooting_by_time_of_day, aes(x = time_of_day, y = total)) +
+  geom_bar(stat = 'identity', fill = 'steelblue') +
+  labs(title = "Frequency of Shootings in NYC by Time of Day",
+       x = "Time of Day",
+       y =" Total" +
+         theme(
+           plot.title = element_text(size=15, family = "serif", face = "bold")
+         )
+  )
+```
+
+This graph shows us that most shootings occur at night.
+
+### Table 1
+
+```{r}
+#| label: setting-up-figs2
+
+murders_per_year <- shooting_data_clean %>% 
+  filter(STATISTICAL_MURDER_FLAG == TRUE) %>%
+  group_by(Year)
+murders_summary <- murders_per_year %>% 
+  count(Year,STATISTICAL_MURDER_FLAG)
+
+murders_summary <- murders_summary %>% rename(total = n)
+```
+
+```{r}
+#| label: tbl-table1
+#| tbl-cap: "Total count of shootings that resulted in death each year from 2006-2024."
+
+murders_summary %>% select(1,3) %>% kable(caption = "Gun Murders per Year, NYC: 2006-2024")
+```
+
+### Graph 2
+
+```{r}
+#| label: fig-graph-2
+#| fig-cap: "Total number of shootings that have resulted in death each year since 2006."
+
+ggplot(murders_summary, aes(x = Year, y = total, group = 1))+
+  geom_line(color = 'red', linewidth = 1) +
+  labs(title = "Gun Murders in NYC per Year",
+       x = "Year",
+       y =" Murders by Gun") +
+  theme(
+    plot.title = element_text(size=20, family = "serif", face = "bold")
+  )
+```
+
+This graph shows us the trend line of how many shootings resulted in murder each year from 2006-2024. There had been a steady decline with a spike in 2020.
+
+The average amount of shootings that result in death in NYC each year is `r mean(murders_summary$total)` per year.
+
+## Reflection
+
+I could see this workflow helping me in my thesis research because it seems to be a good tool for creating a coherent and comprehensive document to look back on and follow. Additionally, it seems easy to share my thought process/analyses with my mentor, and an accessible way for her to collaborate on my code if need be. While I still have to figure out the best way to utilize this kind of workflow, I can definitely see it having benefits to keep everything organized for myself and my data, and for reproducibility purposes.

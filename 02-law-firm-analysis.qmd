@@ -1,0 +1,319 @@
+---
+title: "Assignment 2 - Law Firm Analysis"
+author: "Shannon Joyce"
+---
+
+## Introduction
+
+I have been hired as a data scientist by a law firm that specializes in fighting parking and camera tickets. The firm wants to work on their marketing strategy and have asked me to look at patterns in NYC violation data that can better inform them. So far, I have looked at day of the week, time of day, and violation type. Unfortunately, there was nothing of much significance there. Now, I will be looking into three more variables- issuing agency, the state the driver is from that received the violation, and the county the violation was issued in- and how these variables affect payment amount. Here is the dataset I am using: [NYC Parking and Camera Violation](https://data.cityofnewyork.us/City-Government/Open-Parking-and-Camera-Violations/nc67-uf89/about_data)
+
+## Uploading and Cleaning the Data
+
+```{r}
+#| label: loading-packages-2
+#| message: false
+#| warning: false
+
+library(tidyverse)
+library(httr)
+library(jsonlite)
+library(supernova)
+library(AICcmodavg)
+library(mosaic)
+library(knitr)
+```
+
+```{r}
+#| label: loading-data-2
+#| warning: false
+#| message: false
+
+endpoint<-"https://data.cityofnewyork.us/resource/nc67-uf89.json"
+
+resp <- GET(endpoint, query = list(
+  "$limit" = 99999,
+  "$order" = "issue_date DESC"
+))
+
+camera <- fromJSON(content(resp, as = "text"), flatten = TRUE)
+```
+
+```{r}
+#| label: data-cleaning-2
+
+camera <- camera %>% 
+  mutate(across
+         (c("fine_amount", "interest_amount", "reduction_amount", "payment_amount", "amount_due"),
+           ~as.numeric(.)
+         ))
+
+camera <- camera %>%
+  filter(str_detect(issue_date, "^\\d{4}-\\d{2}-\\d{2}T"))
+
+camera <- camera %>%
+  mutate(county = dplyr::recode(county,
+                           "Q" = "Queens County",
+                           "K" = "Kings County",
+                           "BX" = "Bronx County",
+                           "NY" = "New York County",
+                           "R" = "Richmond County",
+                           "QN" = "Queens County",
+                           "MN" = "New York County",
+                           "BK" = "Kings County",
+                           "ST" = "Richmond County",
+                           "Bronx" = "Bronx County",
+                           "Kings" = "Kings County",
+                           "Qns" = "Queens County",
+                           "RICH" = "Richmond County"))
+
+camera <- camera %>% rename('plate_state' = 'state')
+camera <- camera %>% rename('agency' = 'issuing_agency')
+
+camera_states <- camera %>%
+  filter(plate_state == "NJ" | plate_state == "NY" | plate_state == "CT")
+```
+
+## Agency
+
+### Do certain agencies issue higher payments?
+
+#### Visualization
+
+```{r}
+#| label: fig-visualization-1
+#| fig-cap: "The average payment amount issued by each NYC agency."
+
+ggplot(camera, aes(x = agency, y = payment_amount, fill = agency)) + geom_boxplot() + coord_flip() + 
+  labs(title = "Payment Amount Across Agencies",
+       x = "Agency",
+       y = "Payment Amount in Dollars") +
+  theme(legend.position = "none")
+```
+
+#### Descriptive Statistics
+
+```{r}
+#| label: tbl-descriptive-stats-1
+#| tbl-cap: "Table showing preliminary descriptive statistics such as averages and frequencies to better understand the dataset and what patterns to explore regarding issuing agency."
+
+favstats(payment_amount ~ agency, data = camera) %>% arrange(desc(mean)) %>% kable()
+```
+
+#### Inferential Statistics
+
+```{r}
+#| label: setting-inferential-statistics-1
+
+anova_model_agency<- aov(payment_amount ~ agency, data = camera)
+```
+
+```{r}
+#| label: tbl-inferential-statistics-1
+#| tbl-cap: "ANOVA table representing how much variance in payment amount can be explained by the issuing agency."
+#| tbl-cap-location: bottom
+
+summary(anova_model_agency)
+```
+
+```{r}
+#| label: tbl-inferential-statistics-11
+#| message: false
+#| warning: false
+#| tbl-cap: "A clearer version of the previous ANOVA table."
+#| tbl-cap-location: bottom
+
+supernova(anova_model_agency)
+```
+
+#### Report
+
+##### Sum of Squares - How much variance is explained?
+
+-   SSagency = 1063435
+
+-   SSerror = 627060364
+
+While there is a considerable amount of variability between agencies, there is much more variability within agencies.
+
+##### F value and P-value - Is it statistically significant?
+
+-   F = 10.587
+
+-   P = \<2e-16
+
+This is statistically significant (P \< 0.05).
+
+::: {.callout-note}
+## Statistical vs. Practical Significance
+
+With a large dataset, even very small differences can produce statistically significant p-values. However, small effect sizes show that some variables explain very little real-world variation in payment amount.
+:::
+
+##### PRE - What proportion of variance is explained?
+
+Only about 0.17% of the variance in payment amount is explained by the agency that issued the fine.
+
+#### Interpretation
+
+While the findings of variance in this model were found to be statistically significant, they were not found to be practically significant. The issuing agency does explain a proportion of variance in payment amount, but that proportion is only about 0.17%, which is less than 1% of total variance in payment amount. This is definitely not the most significant difference in the real world. I would not recommend the law firm necessarily use this variable in their marketing strategy, because even if they were able to address each agency, that would still only affect total payment amount by less than 1%.
+
+## Plate State
+
+### Do drivers from different states (NJ, NY, CT) pay more?
+
+#### Visualization
+
+```{r}
+#| label: fig-visualization-2
+#| fig-cap: "The average payment amount issued to NJ drivers, NY drivers, and CT drivers."
+
+ggplot(camera_states, aes(x = plate_state, y = payment_amount, fill = plate_state)) + geom_boxplot() + 
+  labs(title = "Payment Amount Across License Plate States",
+       x = "License Plate State",
+       y = "Payment Amount in Dollars") +
+  theme(legend.position = "none")
+```
+
+#### Descriptive Statistics
+
+```{r}
+#| label: tbl-descriptive-statistics-2
+#| tbl-cap: "Table showing preliminary descriptive statistics such as averages and frequencies to better understand the dataset and what patterns to explore regarding license plate state."
+
+favstats(payment_amount ~ plate_state, data = camera_states) %>% arrange(desc(mean)) %>% kable()
+```
+
+#### Inferential Statistics
+
+```{r}
+#| label: setting-inferential-statistics-2
+
+anova_model_state<- aov(payment_amount ~ plate_state, data = camera_states)
+```
+
+```{r}
+#| label: tbl-inferential-statistics-2
+#| tbl-cap: "ANOVA table representing how much variance in payment amount can be explained by the license plate state of the fine receiver."
+#| tbl-cap-location: bottom
+
+summary(anova_model_state)
+```
+
+```{r}
+#| label: tbl-inferential-statistics-22
+#| message: false
+#| warning: false
+#| tbl-cap: "A clearer version of the previous ANOVA table."
+#| tbl-cap-location: bottom
+
+supernova(anova_model_state)
+```
+
+#### Report
+
+##### Sum of Squares - How much variance is explained?
+
+-   SSstate = 603061
+
+-   SSerror = 593994009
+
+While there is a considerable amount of variability between states, there is much more variability within states.
+
+##### F value and P-value - Is it statistically significant?
+
+-   F = 45.502
+
+-   P = \<2e-16
+
+This is statistically significant (P \< 0.05).
+
+##### PRE - What proportion of variance is explained?
+
+Only about 0.1% of the variance in payment amount is explained by the states the drivers are from.
+
+#### Interpretation
+
+Again, while the findings of variance in this model were found to be statistically significant, they were not found to be practically significant. The state the driver is from does explain a proportion of variance in payment amount, but that proportion is only about 0.1%, which is even less than the amount that issuing agency explains. This is, again, definitely not a significant difference in the real world. I would not recommend the law firm use this variable in their marketing strategy, because at best, it would only address less than 1% of the variance in payment amount.
+
+## County
+
+### Do certain counties tend to have higher payment amounts?
+
+#### Visualization
+
+```{r}
+#| label: fig-visualization-3
+#| fig-cap: "The average payment amount issued to each NYC county."
+
+ggplot(camera, aes(x = county, y = payment_amount, fill = county)) + geom_boxplot() +
+  
+  labs(title = "Payment Amount Across Counties",
+       x = "County",
+       y = "Payment Amount in Dollars") +
+  theme(legend.position = "none")
+```
+
+#### Descriptive Statistics
+
+```{r}
+#| label: tbl-descriptive-statistics-3
+#| tbl-cap: "Table showing preliminary descriptive statistics such as averages and frequencies to better understand the dataset and what patterns to explore regarding county in which the fine was issued."
+
+favstats(payment_amount ~ county, data = camera) %>% arrange(desc(mean)) %>% kable()
+```
+
+#### Inferential Statistics
+
+```{r}
+#| label: setting-inferential-statistics-3
+
+anova_model_county<- aov(payment_amount ~ county, data = camera)
+```
+
+```{r}
+#| label: tbl-inferential-statistics-3
+#| tbl-cap: "ANOVA table representing how much variance in payment amount can be explained by the county in which the fine was issued."
+#| tbl-cap-location: bottom
+
+summary(anova_model_county)
+```
+
+```{r}
+#| label: tbl-inferential-statistics-33
+#| message: false
+#| warning: false
+#| tbl-cap: "A clearer version of the previous ANOVA table."
+#| tbl-cap-location: bottom
+
+supernova(anova_model_county)
+```
+
+#### Report
+
+##### Sum of Squares - How much variance is explained?
+
+-   SScounty = 6694742
+
+-   SSerror = 420213429
+
+Again, while there is a considerable amount of variability between counties, there is much more variability within counties.
+
+##### F value and P-value - Is it statistically significant?
+
+-   F = 233.1
+
+-   P = \<2e-16
+
+This is statistically significant (p \< 0.05).
+
+##### PRE - What proportion of variance is explained?
+
+About 1.5% of the variance in payment amount is explained by the county the fine was issued in.
+
+#### Interpretation
+
+Again, while the findings of variance in this model were found to be statistically significant, they were not found to be very practically significant. The county does explain a proportion of variance in payment amount, but that proportion is only about 1.5%. Though not a high percentage of variance explained by any means, it is the highest percentage we have found thus far! It is also likely not very significant of a difference in the real world. I would also not recommend this as the best variable for the firm to use in their marketing strategy, since it would only address 1.5% of the variance in payment amount.
+
+### Final Statement
+
+If the law firm only had these three variables (agency, state, or county) as options to use in their marketing strategy, I would suggest prioritizing county since it accounts for the largest amount of variance in payment amount out of all three variables.

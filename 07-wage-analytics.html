@@ -1,0 +1,1826 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.27">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Shannon Joyce">
+
+<title>Assignment 7 - Wage Analytics</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="07-wage-analytics_files/libs/clipboard/clipboard.min.js"></script>
+<script src="07-wage-analytics_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="07-wage-analytics_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="07-wage-analytics_files/libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="07-wage-analytics_files/libs/quarto-html/popper.min.js"></script>
+<script src="07-wage-analytics_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="07-wage-analytics_files/libs/quarto-html/anchor.min.js"></script>
+<link href="07-wage-analytics_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="07-wage-analytics_files/libs/quarto-html/quarto-syntax-highlighting-ed96de9b727972fe78a7b5d16c58bf87.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="07-wage-analytics_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="07-wage-analytics_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="07-wage-analytics_files/libs/bootstrap/bootstrap-d6a003b94517c951b2d65075d42fb01b.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+
+
+</head>
+
+<body class="fullcontent quarto-light">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Assignment 7 - Wage Analytics</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Shannon Joyce </p>
+          </div>
+  </div>
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<p>The Wage Analytics Division (WAD) has hired me as their new Data Scientist. My assignment is to determine whether demographic and employment characteristics can be used to predict whether a worker earns a high or low wage.</p>
+<p>Using the Wage dataset from the ISLR package, I will create a binary wage category, explore statistical relationships between variables, and build a logistic regression model capable of predicting wage level using demographic, job, and health-related information.</p>
+<p>My analysis will help the company understand which characteristics are associated with higher earnings and evaluate how well a predictive model performs on unseen data.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ISLR)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggthemes)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(skimr)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(caret)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(pROC)</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(mosaic)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(pscl)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(car)</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(supernova)</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(lsr)</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(caTools)</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(knitr)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section>
+<section id="step-1-create-the-wagecategory-variable" class="level2">
+<h2 class="anchored" data-anchor-id="step-1-create-the-wagecategory-variable">Step 1 – Create the WageCategory Variable</h2>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">data</span>(Wage)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>Wage <span class="sc">%&gt;%</span> <span class="fu">head</span>(<span class="at">n=</span><span class="dv">5</span>) <span class="sc">%&gt;%</span> <span class="fu">kable</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="tbl-see-data" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-see-data-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;1: Wage Dataset (first 5 rows).
+</figcaption>
+<div aria-describedby="tbl-see-data-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<table class="do-not-create-environment cell caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 5%">
+<col style="width: 3%">
+<col style="width: 2%">
+<col style="width: 12%">
+<col style="width: 6%">
+<col style="width: 11%">
+<col style="width: 13%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 8%">
+<col style="width: 6%">
+<col style="width: 7%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;"></th>
+<th style="text-align: right;">year</th>
+<th style="text-align: right;">age</th>
+<th style="text-align: left;">maritl</th>
+<th style="text-align: left;">race</th>
+<th style="text-align: left;">education</th>
+<th style="text-align: left;">region</th>
+<th style="text-align: left;">jobclass</th>
+<th style="text-align: left;">health</th>
+<th style="text-align: left;">health_ins</th>
+<th style="text-align: right;">logwage</th>
+<th style="text-align: right;">wage</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">231655</td>
+<td style="text-align: right;">2006</td>
+<td style="text-align: right;">18</td>
+<td style="text-align: left;">1. Never Married</td>
+<td style="text-align: left;">1. White</td>
+<td style="text-align: left;">1. &lt; HS Grad</td>
+<td style="text-align: left;">2. Middle Atlantic</td>
+<td style="text-align: left;">1. Industrial</td>
+<td style="text-align: left;">1. &lt;=Good</td>
+<td style="text-align: left;">2. No</td>
+<td style="text-align: right;">4.318063</td>
+<td style="text-align: right;">75.04315</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">86582</td>
+<td style="text-align: right;">2004</td>
+<td style="text-align: right;">24</td>
+<td style="text-align: left;">1. Never Married</td>
+<td style="text-align: left;">1. White</td>
+<td style="text-align: left;">4. College Grad</td>
+<td style="text-align: left;">2. Middle Atlantic</td>
+<td style="text-align: left;">2. Information</td>
+<td style="text-align: left;">2. &gt;=Very Good</td>
+<td style="text-align: left;">2. No</td>
+<td style="text-align: right;">4.255273</td>
+<td style="text-align: right;">70.47602</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">161300</td>
+<td style="text-align: right;">2003</td>
+<td style="text-align: right;">45</td>
+<td style="text-align: left;">2. Married</td>
+<td style="text-align: left;">1. White</td>
+<td style="text-align: left;">3. Some College</td>
+<td style="text-align: left;">2. Middle Atlantic</td>
+<td style="text-align: left;">1. Industrial</td>
+<td style="text-align: left;">1. &lt;=Good</td>
+<td style="text-align: left;">1. Yes</td>
+<td style="text-align: right;">4.875061</td>
+<td style="text-align: right;">130.98218</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">155159</td>
+<td style="text-align: right;">2003</td>
+<td style="text-align: right;">43</td>
+<td style="text-align: left;">2. Married</td>
+<td style="text-align: left;">3. Asian</td>
+<td style="text-align: left;">4. College Grad</td>
+<td style="text-align: left;">2. Middle Atlantic</td>
+<td style="text-align: left;">2. Information</td>
+<td style="text-align: left;">2. &gt;=Very Good</td>
+<td style="text-align: left;">1. Yes</td>
+<td style="text-align: right;">5.041393</td>
+<td style="text-align: right;">154.68529</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">11443</td>
+<td style="text-align: right;">2005</td>
+<td style="text-align: right;">50</td>
+<td style="text-align: left;">4. Divorced</td>
+<td style="text-align: left;">1. White</td>
+<td style="text-align: left;">2. HS Grad</td>
+<td style="text-align: left;">2. Middle Atlantic</td>
+<td style="text-align: left;">2. Information</td>
+<td style="text-align: left;">1. &lt;=Good</td>
+<td style="text-align: left;">1. Yes</td>
+<td style="text-align: right;">4.318063</td>
+<td style="text-align: right;">75.04315</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>median_wage<span class="ot">&lt;-</span> <span class="fu">median</span>(Wage<span class="sc">$</span>wage)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>Wage <span class="ot">&lt;-</span> Wage <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">WageCategory =</span> <span class="fu">case_when</span>(</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>      wage <span class="sc">&gt;</span> median_wage <span class="sc">~</span> <span class="st">"High"</span>,</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>      wage <span class="sc">&lt;=</span> median_wage <span class="sc">~</span> <span class="st">"Low"</span>),</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">WageCategory =</span> <span class="fu">as.factor</span>(WageCategory)</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>Wage <span class="sc">%&gt;%</span> <span class="fu">head</span>(<span class="at">n=</span><span class="dv">5</span>) <span class="sc">%&gt;%</span> <span class="fu">kable</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="tbl-new-dataset" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-new-dataset-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;2: Wage Dataset Including Wage Category (first 5 rows).
+</figcaption>
+<div aria-describedby="tbl-new-dataset-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<table class="do-not-create-environment cell caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 4%">
+<col style="width: 3%">
+<col style="width: 2%">
+<col style="width: 11%">
+<col style="width: 6%">
+<col style="width: 10%">
+<col style="width: 12%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 7%">
+<col style="width: 6%">
+<col style="width: 6%">
+<col style="width: 8%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;"></th>
+<th style="text-align: right;">year</th>
+<th style="text-align: right;">age</th>
+<th style="text-align: left;">maritl</th>
+<th style="text-align: left;">race</th>
+<th style="text-align: left;">education</th>
+<th style="text-align: left;">region</th>
+<th style="text-align: left;">jobclass</th>
+<th style="text-align: left;">health</th>
+<th style="text-align: left;">health_ins</th>
+<th style="text-align: right;">logwage</th>
+<th style="text-align: right;">wage</th>
+<th style="text-align: left;">WageCategory</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">231655</td>
+<td style="text-align: right;">2006</td>
+<td style="text-align: right;">18</td>
+<td style="text-align: left;">1. Never Married</td>
+<td style="text-align: left;">1. White</td>
+<td style="text-align: left;">1. &lt; HS Grad</td>
+<td style="text-align: left;">2. Middle Atlantic</td>
+<td style="text-align: left;">1. Industrial</td>
+<td style="text-align: left;">1. &lt;=Good</td>
+<td style="text-align: left;">2. No</td>
+<td style="text-align: right;">4.318063</td>
+<td style="text-align: right;">75.04315</td>
+<td style="text-align: left;">Low</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">86582</td>
+<td style="text-align: right;">2004</td>
+<td style="text-align: right;">24</td>
+<td style="text-align: left;">1. Never Married</td>
+<td style="text-align: left;">1. White</td>
+<td style="text-align: left;">4. College Grad</td>
+<td style="text-align: left;">2. Middle Atlantic</td>
+<td style="text-align: left;">2. Information</td>
+<td style="text-align: left;">2. &gt;=Very Good</td>
+<td style="text-align: left;">2. No</td>
+<td style="text-align: right;">4.255273</td>
+<td style="text-align: right;">70.47602</td>
+<td style="text-align: left;">Low</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">161300</td>
+<td style="text-align: right;">2003</td>
+<td style="text-align: right;">45</td>
+<td style="text-align: left;">2. Married</td>
+<td style="text-align: left;">1. White</td>
+<td style="text-align: left;">3. Some College</td>
+<td style="text-align: left;">2. Middle Atlantic</td>
+<td style="text-align: left;">1. Industrial</td>
+<td style="text-align: left;">1. &lt;=Good</td>
+<td style="text-align: left;">1. Yes</td>
+<td style="text-align: right;">4.875061</td>
+<td style="text-align: right;">130.98218</td>
+<td style="text-align: left;">High</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">155159</td>
+<td style="text-align: right;">2003</td>
+<td style="text-align: right;">43</td>
+<td style="text-align: left;">2. Married</td>
+<td style="text-align: left;">3. Asian</td>
+<td style="text-align: left;">4. College Grad</td>
+<td style="text-align: left;">2. Middle Atlantic</td>
+<td style="text-align: left;">2. Information</td>
+<td style="text-align: left;">2. &gt;=Very Good</td>
+<td style="text-align: left;">1. Yes</td>
+<td style="text-align: right;">5.041393</td>
+<td style="text-align: right;">154.68529</td>
+<td style="text-align: left;">High</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">11443</td>
+<td style="text-align: right;">2005</td>
+<td style="text-align: right;">50</td>
+<td style="text-align: left;">4. Divorced</td>
+<td style="text-align: left;">1. White</td>
+<td style="text-align: left;">2. HS Grad</td>
+<td style="text-align: left;">2. Middle Atlantic</td>
+<td style="text-align: left;">2. Information</td>
+<td style="text-align: left;">1. &lt;=Good</td>
+<td style="text-align: left;">1. Yes</td>
+<td style="text-align: right;">4.318063</td>
+<td style="text-align: right;">75.04315</td>
+<td style="text-align: left;">Low</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+</section>
+<section id="step-2-data-cleaning" class="level2">
+<h2 class="anchored" data-anchor-id="step-2-data-cleaning">Step 2 – Data Cleaning</h2>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">colnames</span>(Wage)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code> [1] "year"         "age"          "maritl"       "race"         "education"   
+ [6] "region"       "jobclass"     "health"       "health_ins"   "logwage"     
+[11] "wage"         "WageCategory"</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>Wage <span class="ot">&lt;-</span> Wage <span class="sc">%&gt;%</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">across</span>(</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>      <span class="fu">c</span>(<span class="st">"maritl"</span>, <span class="st">"race"</span>, <span class="st">"education"</span>, <span class="st">"region"</span>, <span class="st">"jobclass"</span>, <span class="st">"health"</span>, <span class="st">"health_ins"</span>), </span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>      <span class="sc">~</span><span class="fu">substring</span>(.x, <span class="dv">4</span>)</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>Wage <span class="sc">%&gt;%</span> <span class="fu">head</span>(<span class="at">n=</span><span class="dv">5</span>) <span class="sc">%&gt;%</span> <span class="fu">kable</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="tbl-clean-dataset" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-clean-dataset-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;3: Cleaned Wage Dataset (first 5 rows).
+</figcaption>
+<div aria-describedby="tbl-clean-dataset-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<table class="do-not-create-environment cell caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 5%">
+<col style="width: 3%">
+<col style="width: 3%">
+<col style="width: 10%">
+<col style="width: 4%">
+<col style="width: 9%">
+<col style="width: 12%">
+<col style="width: 9%">
+<col style="width: 9%">
+<col style="width: 8%">
+<col style="width: 6%">
+<col style="width: 7%">
+<col style="width: 9%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;"></th>
+<th style="text-align: right;">year</th>
+<th style="text-align: right;">age</th>
+<th style="text-align: left;">maritl</th>
+<th style="text-align: left;">race</th>
+<th style="text-align: left;">education</th>
+<th style="text-align: left;">region</th>
+<th style="text-align: left;">jobclass</th>
+<th style="text-align: left;">health</th>
+<th style="text-align: left;">health_ins</th>
+<th style="text-align: right;">logwage</th>
+<th style="text-align: right;">wage</th>
+<th style="text-align: left;">WageCategory</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">231655</td>
+<td style="text-align: right;">2006</td>
+<td style="text-align: right;">18</td>
+<td style="text-align: left;">Never Married</td>
+<td style="text-align: left;">White</td>
+<td style="text-align: left;">&lt; HS Grad</td>
+<td style="text-align: left;">Middle Atlantic</td>
+<td style="text-align: left;">Industrial</td>
+<td style="text-align: left;">&lt;=Good</td>
+<td style="text-align: left;">No</td>
+<td style="text-align: right;">4.318063</td>
+<td style="text-align: right;">75.04315</td>
+<td style="text-align: left;">Low</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">86582</td>
+<td style="text-align: right;">2004</td>
+<td style="text-align: right;">24</td>
+<td style="text-align: left;">Never Married</td>
+<td style="text-align: left;">White</td>
+<td style="text-align: left;">College Grad</td>
+<td style="text-align: left;">Middle Atlantic</td>
+<td style="text-align: left;">Information</td>
+<td style="text-align: left;">&gt;=Very Good</td>
+<td style="text-align: left;">No</td>
+<td style="text-align: right;">4.255273</td>
+<td style="text-align: right;">70.47602</td>
+<td style="text-align: left;">Low</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">161300</td>
+<td style="text-align: right;">2003</td>
+<td style="text-align: right;">45</td>
+<td style="text-align: left;">Married</td>
+<td style="text-align: left;">White</td>
+<td style="text-align: left;">Some College</td>
+<td style="text-align: left;">Middle Atlantic</td>
+<td style="text-align: left;">Industrial</td>
+<td style="text-align: left;">&lt;=Good</td>
+<td style="text-align: left;">Yes</td>
+<td style="text-align: right;">4.875061</td>
+<td style="text-align: right;">130.98218</td>
+<td style="text-align: left;">High</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">155159</td>
+<td style="text-align: right;">2003</td>
+<td style="text-align: right;">43</td>
+<td style="text-align: left;">Married</td>
+<td style="text-align: left;">Asian</td>
+<td style="text-align: left;">College Grad</td>
+<td style="text-align: left;">Middle Atlantic</td>
+<td style="text-align: left;">Information</td>
+<td style="text-align: left;">&gt;=Very Good</td>
+<td style="text-align: left;">Yes</td>
+<td style="text-align: right;">5.041393</td>
+<td style="text-align: right;">154.68529</td>
+<td style="text-align: left;">High</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">11443</td>
+<td style="text-align: right;">2005</td>
+<td style="text-align: right;">50</td>
+<td style="text-align: left;">Divorced</td>
+<td style="text-align: left;">White</td>
+<td style="text-align: left;">HS Grad</td>
+<td style="text-align: left;">Middle Atlantic</td>
+<td style="text-align: left;">Information</td>
+<td style="text-align: left;">&lt;=Good</td>
+<td style="text-align: left;">Yes</td>
+<td style="text-align: right;">4.318063</td>
+<td style="text-align: right;">75.04315</td>
+<td style="text-align: left;">Low</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+</section>
+<section id="step-3-classical-statistical-tests" class="level2">
+<h2 class="anchored" data-anchor-id="step-3-classical-statistical-tests">Step 3 – Classical Statistical Tests</h2>
+<section id="a-t-test" class="level3">
+<h3 class="anchored" data-anchor-id="a-t-test">A) T-Test</h3>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">t.test</span>(age <span class="sc">~</span> WageCategory, <span class="at">data =</span> Wage)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+    Welch Two Sample t-test
+
+data:  age by WageCategory
+t = 10.888, df = 2855, p-value &lt; 2.2e-16
+alternative hypothesis: true difference in means between group High and group Low is not equal to 0
+95 percent confidence interval:
+ 3.681416 5.298535
+sample estimates:
+mean in group High  mean in group Low 
+          44.68510           40.19512 </code></pre>
+</div>
+</div>
+<ul>
+<li><p>Mean age for high earners: 45 years old</p></li>
+<li><p>Mean age for low earners: 40 years old</p></li>
+<li><p>t-statistic: 10.9</p></li>
+<li><p>df: 2855</p></li>
+<li><p>p-value &lt; 2.2e-16</p></li>
+</ul>
+<p>Age seems to differ between high earners and low earners. We have a high t-statistic and a very small p-value, suggesting that we are very confident in a large difference between the ages in both wage categories.</p>
+</section>
+<section id="b-anova" class="level3">
+<h3 class="anchored" data-anchor-id="b-anova">B) ANOVA</h3>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">favstats</span>(wage <span class="sc">~</span> education, <span class="at">data =</span> Wage) <span class="sc">%&gt;%</span> <span class="fu">arrange</span>(<span class="fu">desc</span>(mean)) <span class="sc">%&gt;%</span> <span class="fu">kable</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="tbl-anova-7" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-anova-7-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;4: Table showing preliminary descriptive statistics such as averages and frequencies to better understand the dataset and what patterns to explore regarding wage and education.
+</figcaption>
+<div aria-describedby="tbl-anova-7-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<table class="do-not-create-environment cell caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 16%">
+<col style="width: 9%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 9%">
+<col style="width: 10%">
+<col style="width: 9%">
+<col style="width: 4%">
+<col style="width: 8%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">education</th>
+<th style="text-align: right;">min</th>
+<th style="text-align: right;">Q1</th>
+<th style="text-align: right;">median</th>
+<th style="text-align: right;">Q3</th>
+<th style="text-align: right;">max</th>
+<th style="text-align: right;">mean</th>
+<th style="text-align: right;">sd</th>
+<th style="text-align: right;">n</th>
+<th style="text-align: right;">missing</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Advanced Degree</td>
+<td style="text-align: right;">38.60591</td>
+<td style="text-align: right;">117.14682</td>
+<td style="text-align: right;">141.77517</td>
+<td style="text-align: right;">171.49763</td>
+<td style="text-align: right;">318.3424</td>
+<td style="text-align: right;">150.91778</td>
+<td style="text-align: right;">53.90421</td>
+<td style="text-align: right;">426</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">College Grad</td>
+<td style="text-align: right;">32.36641</td>
+<td style="text-align: right;">99.68946</td>
+<td style="text-align: right;">118.88436</td>
+<td style="text-align: right;">143.13494</td>
+<td style="text-align: right;">281.7460</td>
+<td style="text-align: right;">124.42791</td>
+<td style="text-align: right;">41.18907</td>
+<td style="text-align: right;">685</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Some College</td>
+<td style="text-align: right;">20.08554</td>
+<td style="text-align: right;">89.24288</td>
+<td style="text-align: right;">104.92151</td>
+<td style="text-align: right;">121.38842</td>
+<td style="text-align: right;">314.3293</td>
+<td style="text-align: right;">107.75557</td>
+<td style="text-align: right;">32.47473</td>
+<td style="text-align: right;">650</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">HS Grad</td>
+<td style="text-align: right;">23.27470</td>
+<td style="text-align: right;">77.94638</td>
+<td style="text-align: right;">94.07271</td>
+<td style="text-align: right;">109.83399</td>
+<td style="text-align: right;">318.3424</td>
+<td style="text-align: right;">95.78335</td>
+<td style="text-align: right;">28.56756</td>
+<td style="text-align: right;">971</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">&lt; HS Grad</td>
+<td style="text-align: right;">20.93438</td>
+<td style="text-align: right;">70.26177</td>
+<td style="text-align: right;">81.28325</td>
+<td style="text-align: right;">97.49329</td>
+<td style="text-align: right;">152.2168</td>
+<td style="text-align: right;">84.10441</td>
+<td style="text-align: right;">21.57805</td>
+<td style="text-align: right;">268</td>
+<td style="text-align: right;">0</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>anova_model_ed<span class="ot">&lt;-</span> <span class="fu">aov</span>(wage <span class="sc">~</span> education, <span class="at">data =</span> Wage)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div id="tbl-anova-model-7" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-tbl-cap-location="bottom">
+<figure class="quarto-float quarto-float-tbl figure">
+<div aria-describedby="tbl-anova-model-7-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(anova_model_ed)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>              Df  Sum Sq Mean Sq F value Pr(&gt;F)    
+education      4 1226364  306591   229.8 &lt;2e-16 ***
+Residuals   2995 3995721    1334                   
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-tbl" id="tbl-anova-model-7-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;5: ANOVA table representing how much variance in wage can be explained by level of education.
+</figcaption>
+</figure>
+</div>
+<div id="tbl-anova-model-77" class="cell quarto-float quarto-figure quarto-figure-center anchored" data-tbl-cap-location="bottom">
+<figure class="quarto-float quarto-float-tbl figure">
+<div aria-describedby="tbl-anova-model-77-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">supernova</span>(anova_model_ed)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code> Analysis of Variance Table (Type III SS)
+ Model: wage ~ education
+
+                                  SS   df         MS       F   PRE     p
+ ----- --------------- | ----------- ---- ---------- ------- ----- -----
+ Model (error reduced) | 1226364.485    4 306591.121 229.806 .2348 .0000
+ Error (from model)    | 3995721.285 2995   1334.131                    
+ ----- --------------- | ----------- ---- ---------- ------- ----- -----
+ Total (empty model)   | 5222085.770 2999   1741.276                    </code></pre>
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-tbl" id="tbl-anova-model-77-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;6: A clearer version of the previous ANOVA table.
+</figcaption>
+</figure>
+</div>
+<ul>
+<li><p>F-statistic: 229.81</p></li>
+<li><p>df: 2999</p></li>
+<li><p>p-value &lt; 2e-16</p></li>
+</ul>
+<p>With a very large F-statistic and a very small p-value, we can conclude that the variation in wages between education levels is statistically significant. Also, our PRE tells us that education level accounts for 23% of variance in wages.</p>
+</section>
+<section id="c-chi-squareassociation-test" class="level3">
+<h3 class="anchored" data-anchor-id="c-chi-squareassociation-test">C) Chi-Square/Association Test</h3>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>cont_table<span class="ot">&lt;-</span> <span class="fu">table</span>(Wage<span class="sc">$</span>race, Wage<span class="sc">$</span>WageCategory)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>cont_table <span class="sc">%&gt;%</span> <span class="fu">kable</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="tbl-contingency-table" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-contingency-table-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;7: A contingency table representing the number of people in each wage category grouped by race.
+</figcaption>
+<div aria-describedby="tbl-contingency-table-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<table class="do-not-create-environment cell caption-top table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: left;"></th>
+<th style="text-align: right;">High</th>
+<th style="text-align: right;">Low</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Asian</td>
+<td style="text-align: right;">113</td>
+<td style="text-align: right;">77</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Black</td>
+<td style="text-align: right;">102</td>
+<td style="text-align: right;">191</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Other</td>
+<td style="text-align: right;">9</td>
+<td style="text-align: right;">28</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">White</td>
+<td style="text-align: right;">1259</td>
+<td style="text-align: right;">1221</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>Wage<span class="sc">$</span>race<span class="ot">&lt;-</span> <span class="fu">as.factor</span>(Wage<span class="sc">$</span>race)</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(Wage<span class="sc">$</span>race)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code> Factor w/ 4 levels "Asian","Black",..: 4 4 4 1 4 4 3 1 2 4 ...</code></pre>
+</div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">associationTest</span>(<span class="sc">~</span> WageCategory <span class="sc">+</span> race, <span class="at">data =</span> Wage)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+     Chi-square test of categorical association
+
+Variables:   WageCategory, race 
+
+Hypotheses: 
+   null:        variables are independent of one another
+   alternative: some contingency exists between variables
+
+Observed contingency table:
+            race
+WageCategory Asian Black Other White
+        High   113   102     9  1259
+        Low     77   191    28  1221
+
+Expected contingency table under the null hypothesis:
+            race
+WageCategory Asian Black Other White
+        High  93.9   145  18.3  1226
+        Low   96.1   148  18.7  1254
+
+Test results: 
+   X-squared statistic:  43.814 
+   degrees of freedom:  3 
+   p-value:  &lt;.001 
+
+Other information: 
+   estimated effect size (Cramer's v):  0.121 </code></pre>
+</div>
+</div>
+<ul>
+<li><p>χ²: 43.8</p></li>
+<li><p>df: 3</p></li>
+<li><p>p-value &lt; 0.001</p></li>
+<li><p>Cramer’s V: 0.121</p></li>
+</ul>
+<p>When comparing our observed and expected values, we see that White people performed as expected. A slightly higher number of Asian people earned higher wages than expected, and a slightly higher number of Black people earned lower wages than expected. Additionally, those who marked their race as “Other” tended to earn less than expected.</p>
+<p>With a large chi-squared value and a small p-value, we can conclude that the relationship between race and wage category is statistically significant. However, with such a small effect size, the relationship is weak and we cannot assume that race itself plays much of a role in determining wage category.</p>
+</section>
+</section>
+<section id="step-4-logistic-regression-model" class="level2">
+<h2 class="anchored" data-anchor-id="step-4-logistic-regression-model">Step 4 – Logistic Regression Model</h2>
+<section id="predictive-model" class="level3">
+<h3 class="anchored" data-anchor-id="predictive-model">Predictive Model</h3>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">42</span>)</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>sample <span class="ot">&lt;-</span> <span class="fu">sample.split</span>(Wage<span class="sc">$</span>WageCategory, <span class="at">SplitRatio =</span> <span class="fl">0.7</span>)</span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>training_data <span class="ot">&lt;-</span> <span class="fu">subset</span>(Wage, sample <span class="sc">==</span> <span class="cn">TRUE</span>)</span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>test_data <span class="ot">&lt;-</span> <span class="fu">subset</span>(Wage, sample <span class="sc">==</span> <span class="cn">FALSE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section>
+<section id="model-specification" class="level3">
+<h3 class="anchored" data-anchor-id="model-specification">Model Specification</h3>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>train_model <span class="ot">&lt;-</span> <span class="fu">glm</span>(WageCategory <span class="sc">~</span> age <span class="sc">+</span> maritl <span class="sc">+</span> race <span class="sc">+</span> education <span class="sc">+</span> jobclass <span class="sc">+</span>                       health <span class="sc">+</span> health_ins,</span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>                   <span class="at">family =</span> <span class="st">"binomial"</span>, <span class="at">data =</span> training_data)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section>
+<section id="logistic-regression-output" class="level3">
+<h3 class="anchored" data-anchor-id="logistic-regression-output">Logistic Regression Output</h3>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(train_model)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+glm(formula = WageCategory ~ age + maritl + race + education + 
+    jobclass + health + health_ins, family = "binomial", data = training_data)
+
+Coefficients:
+                          Estimate Std. Error z value Pr(&gt;|z|)    
+(Intercept)               3.969497   0.449412   8.833  &lt; 2e-16 ***
+age                      -0.019159   0.005179  -3.699 0.000216 ***
+maritlMarried            -0.880983   0.198852  -4.430 9.41e-06 ***
+maritlNever Married       0.382638   0.235167   1.627 0.103718    
+maritlSeparated          -0.493750   0.445580  -1.108 0.267815    
+maritlWidowed            -0.702502   0.641162  -1.096 0.273224    
+raceBlack                 0.308966   0.280923   1.100 0.271407    
+raceOther                 0.024598   0.587975   0.042 0.966630    
+raceWhite                -0.163411   0.226615  -0.721 0.470850    
+educationAdvanced Degree -2.727178   0.262521 -10.388  &lt; 2e-16 ***
+educationCollege Grad    -1.918224   0.229754  -8.349  &lt; 2e-16 ***
+educationHS Grad         -0.537104   0.218967  -2.453 0.014171 *  
+educationSome College    -1.253153   0.226653  -5.529 3.22e-08 ***
+jobclassInformation      -0.239335   0.107600  -2.224 0.026128 *  
+health&gt;=Very Good        -0.305837   0.117671  -2.599 0.009347 ** 
+health_insYes            -1.208890   0.118014 -10.244  &lt; 2e-16 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+(Dispersion parameter for binomial family taken to be 1)
+
+    Null deviance: 2910.9  on 2099  degrees of freedom
+Residual deviance: 2225.0  on 2084  degrees of freedom
+AIC: 2257
+
+Number of Fisher Scoring iterations: 4</code></pre>
+</div>
+</div>
+</section>
+<section id="odds-ratio" class="level3">
+<h3 class="anchored" data-anchor-id="odds-ratio">Odds Ratio</h3>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="fu">exp</span>(<span class="fu">coef</span>(train_model))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>             (Intercept)                      age            maritlMarried 
+             52.95789941               0.98102322               0.41437526 
+     maritlNever Married          maritlSeparated            maritlWidowed 
+              1.46614683               0.61033309               0.49534462 
+               raceBlack                raceOther                raceWhite 
+              1.36201634               1.02490299               0.84924198 
+educationAdvanced Degree    educationCollege Grad         educationHS Grad 
+              0.06540362               0.14686760               0.58443835 
+   educationSome College      jobclassInformation        health&gt;=Very Good 
+              0.28560285               0.78715143               0.73650656 
+           health_insYes 
+              0.29852856 </code></pre>
+</div>
+</div>
+<p>The predictors that matter most in predicting wage category is age, marital status, education, and health insurance status. Specifically, being older, married, having some college experience, a college degree, or an advanced degree, and having health insurance makes someone much less likely to earn a lower wage. Because of the fact that my model considers the positive outcome to be “Low” wage, all of these specific factors have a negative relationship with wage category (meaning they are more likely to earn a higher wage).</p>
+<p>Having an advanced degree had the strongest effect on predicting higher wage, followed by having a college degree, then some college experience, then having active health insurance, being married, and finally older age with the smallest (but still statistically significant) effect size.</p>
+<p>Health insurance status surprised me the most - not that it is shocking that people with higher wages tend to have health insurance, but it seems like (in my experience) many lower wage jobs still offer some sort of health insurance, If anything, I thought that it would have been a very weak predictor compared to the other variables.</p>
+</section>
+</section>
+<section id="step-5-model-evaluation-on-test-data" class="level2">
+<h2 class="anchored" data-anchor-id="step-5-model-evaluation-on-test-data">Step 5 – Model Evaluation on Test Data</h2>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">pR2</span>(train_model)[<span class="st">"McFadden"</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>fitting null model for pseudo-r2</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code> McFadden 
+0.2356458 </code></pre>
+</div>
+</div>
+<p>This score tells us that our model has a good fit.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="fu">varImp</span>(train_model) <span class="sc">%&gt;%</span> <span class="fu">arrange</span>(<span class="fu">desc</span>(Overall)) <span class="sc">%&gt;%</span> <span class="fu">kable</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="tbl-varimp" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-varimp-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;8: Table representing contributions of each predictor variable to the model’s predictive accuracy
+</figcaption>
+<div aria-describedby="tbl-varimp-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<table class="do-not-create-environment cell caption-top table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: left;"></th>
+<th style="text-align: right;">Overall</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">educationAdvanced Degree</td>
+<td style="text-align: right;">10.3884187</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">health_insYes</td>
+<td style="text-align: right;">10.2436506</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">educationCollege Grad</td>
+<td style="text-align: right;">8.3490394</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">educationSome College</td>
+<td style="text-align: right;">5.5289440</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">maritlMarried</td>
+<td style="text-align: right;">4.4303535</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">age</td>
+<td style="text-align: right;">3.6994409</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">health&gt;=Very Good</td>
+<td style="text-align: right;">2.5990901</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">educationHS Grad</td>
+<td style="text-align: right;">2.4529042</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">jobclassInformation</td>
+<td style="text-align: right;">2.2243094</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">maritlNever Married</td>
+<td style="text-align: right;">1.6270892</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">maritlSeparated</td>
+<td style="text-align: right;">1.1081073</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">raceBlack</td>
+<td style="text-align: right;">1.0998271</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">maritlWidowed</td>
+<td style="text-align: right;">1.0956687</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">raceWhite</td>
+<td style="text-align: right;">0.7210960</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">raceOther</td>
+<td style="text-align: right;">0.0418351</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+<p>Education (namely College Grad &amp; Advanced Degree) and health insurance are the strongest predictors of having a higher wage.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="fu">vif</span>(train_model) <span class="sc">%&gt;%</span> <span class="fu">kable</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="tbl-vif" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-vif-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;9: A table representing Variance Inflation Factor (VIF) of each variable.
+</figcaption>
+<div aria-describedby="tbl-vif-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<table class="do-not-create-environment cell caption-top table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th style="text-align: left;"></th>
+<th style="text-align: right;">GVIF</th>
+<th style="text-align: right;">Df</th>
+<th style="text-align: right;">GVIF^(1/(2*Df))</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">age</td>
+<td style="text-align: right;">1.226363</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">1.107413</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">maritl</td>
+<td style="text-align: right;">1.230025</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">1.026217</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">race</td>
+<td style="text-align: right;">1.088403</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">1.014219</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">education</td>
+<td style="text-align: right;">1.171092</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">1.019938</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">jobclass</td>
+<td style="text-align: right;">1.076950</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">1.037762</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">health</td>
+<td style="text-align: right;">1.057935</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">1.028560</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">health_ins</td>
+<td style="text-align: right;">1.020670</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">1.010282</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+<p>Thankfully, our model shows no colinearity.</p>
+<section id="predicted-probabilities-classes" class="level3">
+<h3 class="anchored" data-anchor-id="predicted-probabilities-classes">Predicted Probabilities &amp; Classes</h3>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>test_data<span class="sc">$</span>pred_prob <span class="ot">&lt;-</span> <span class="fu">predict</span>(train_model, <span class="at">newdata =</span> test_data, <span class="at">type =</span> <span class="st">"response"</span>)</span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>test_data<span class="sc">$</span>pred_class <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(test_data<span class="sc">$</span>pred_prob <span class="sc">&gt;</span> <span class="fl">0.5</span>, <span class="st">"Low"</span>, <span class="st">"High"</span>) <span class="sc">%&gt;%</span> <span class="fu">as.factor</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>test_data <span class="sc">%&gt;%</span> <span class="fu">head</span>(<span class="at">n=</span><span class="dv">10</span>) <span class="sc">%&gt;%</span> <span class="fu">kable</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="tbl-predicted-probs-classes" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-predicted-probs-classes-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;10: This table represents the test data (based on the original data) and our model’s predictions about each person’s wage category.
+</figcaption>
+<div aria-describedby="tbl-predicted-probs-classes-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<table class="do-not-create-environment cell caption-top table table-sm table-striped small">
+<colgroup>
+<col style="width: 4%">
+<col style="width: 3%">
+<col style="width: 2%">
+<col style="width: 8%">
+<col style="width: 3%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 7%">
+<col style="width: 7%">
+<col style="width: 7%">
+<col style="width: 5%">
+<col style="width: 6%">
+<col style="width: 8%">
+<col style="width: 6%">
+<col style="width: 7%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;"></th>
+<th style="text-align: right;">year</th>
+<th style="text-align: right;">age</th>
+<th style="text-align: left;">maritl</th>
+<th style="text-align: left;">race</th>
+<th style="text-align: left;">education</th>
+<th style="text-align: left;">region</th>
+<th style="text-align: left;">jobclass</th>
+<th style="text-align: left;">health</th>
+<th style="text-align: left;">health_ins</th>
+<th style="text-align: right;">logwage</th>
+<th style="text-align: right;">wage</th>
+<th style="text-align: left;">WageCategory</th>
+<th style="text-align: right;">pred_prob</th>
+<th style="text-align: left;">pred_class</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">231655</td>
+<td style="text-align: right;">2006</td>
+<td style="text-align: right;">18</td>
+<td style="text-align: left;">Never Married</td>
+<td style="text-align: left;">White</td>
+<td style="text-align: left;">&lt; HS Grad</td>
+<td style="text-align: left;">Middle Atlantic</td>
+<td style="text-align: left;">Industrial</td>
+<td style="text-align: left;">&lt;=Good</td>
+<td style="text-align: left;">No</td>
+<td style="text-align: right;">4.318063</td>
+<td style="text-align: right;">75.04315</td>
+<td style="text-align: left;">Low</td>
+<td style="text-align: right;">0.9790380</td>
+<td style="text-align: left;">Low</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">86582</td>
+<td style="text-align: right;">2004</td>
+<td style="text-align: right;">24</td>
+<td style="text-align: left;">Never Married</td>
+<td style="text-align: left;">White</td>
+<td style="text-align: left;">College Grad</td>
+<td style="text-align: left;">Middle Atlantic</td>
+<td style="text-align: left;">Information</td>
+<td style="text-align: left;">&gt;=Very Good</td>
+<td style="text-align: left;">No</td>
+<td style="text-align: right;">4.255273</td>
+<td style="text-align: right;">70.47602</td>
+<td style="text-align: left;">Low</td>
+<td style="text-align: right;">0.7799730</td>
+<td style="text-align: left;">Low</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">376662</td>
+<td style="text-align: right;">2008</td>
+<td style="text-align: right;">54</td>
+<td style="text-align: left;">Married</td>
+<td style="text-align: left;">White</td>
+<td style="text-align: left;">College Grad</td>
+<td style="text-align: left;">Middle Atlantic</td>
+<td style="text-align: left;">Information</td>
+<td style="text-align: left;">&gt;=Very Good</td>
+<td style="text-align: left;">Yes</td>
+<td style="text-align: right;">4.845098</td>
+<td style="text-align: right;">127.11574</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: right;">0.1440839</td>
+<td style="text-align: left;">High</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">450601</td>
+<td style="text-align: right;">2009</td>
+<td style="text-align: right;">44</td>
+<td style="text-align: left;">Married</td>
+<td style="text-align: left;">Other</td>
+<td style="text-align: left;">Some College</td>
+<td style="text-align: left;">Middle Atlantic</td>
+<td style="text-align: left;">Industrial</td>
+<td style="text-align: left;">&gt;=Very Good</td>
+<td style="text-align: left;">Yes</td>
+<td style="text-align: right;">5.133021</td>
+<td style="text-align: right;">169.52854</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: right;">0.3780648</td>
+<td style="text-align: left;">High</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">305706</td>
+<td style="text-align: right;">2007</td>
+<td style="text-align: right;">34</td>
+<td style="text-align: left;">Married</td>
+<td style="text-align: left;">White</td>
+<td style="text-align: left;">HS Grad</td>
+<td style="text-align: left;">Middle Atlantic</td>
+<td style="text-align: left;">Industrial</td>
+<td style="text-align: left;">&gt;=Very Good</td>
+<td style="text-align: left;">No</td>
+<td style="text-align: right;">4.397940</td>
+<td style="text-align: right;">81.28325</td>
+<td style="text-align: left;">Low</td>
+<td style="text-align: right;">0.8070183</td>
+<td style="text-align: left;">Low</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">160191</td>
+<td style="text-align: right;">2003</td>
+<td style="text-align: right;">37</td>
+<td style="text-align: left;">Never Married</td>
+<td style="text-align: left;">Asian</td>
+<td style="text-align: left;">College Grad</td>
+<td style="text-align: left;">Middle Atlantic</td>
+<td style="text-align: left;">Industrial</td>
+<td style="text-align: left;">&gt;=Very Good</td>
+<td style="text-align: left;">No</td>
+<td style="text-align: right;">4.414973</td>
+<td style="text-align: right;">82.67964</td>
+<td style="text-align: left;">Low</td>
+<td style="text-align: right;">0.8052107</td>
+<td style="text-align: left;">Low</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">230312</td>
+<td style="text-align: right;">2006</td>
+<td style="text-align: right;">50</td>
+<td style="text-align: left;">Married</td>
+<td style="text-align: left;">White</td>
+<td style="text-align: left;">Advanced Degree</td>
+<td style="text-align: left;">Middle Atlantic</td>
+<td style="text-align: left;">Information</td>
+<td style="text-align: left;">&gt;=Very Good</td>
+<td style="text-align: left;">No</td>
+<td style="text-align: right;">5.360552</td>
+<td style="text-align: right;">212.84235</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: right;">0.2132905</td>
+<td style="text-align: left;">High</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">301585</td>
+<td style="text-align: right;">2007</td>
+<td style="text-align: right;">56</td>
+<td style="text-align: left;">Married</td>
+<td style="text-align: left;">White</td>
+<td style="text-align: left;">College Grad</td>
+<td style="text-align: left;">Middle Atlantic</td>
+<td style="text-align: left;">Industrial</td>
+<td style="text-align: left;">&lt;=Good</td>
+<td style="text-align: left;">Yes</td>
+<td style="text-align: right;">4.861026</td>
+<td style="text-align: right;">129.15669</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: right;">0.2184157</td>
+<td style="text-align: left;">High</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">158226</td>
+<td style="text-align: right;">2003</td>
+<td style="text-align: right;">38</td>
+<td style="text-align: left;">Married</td>
+<td style="text-align: left;">Asian</td>
+<td style="text-align: left;">College Grad</td>
+<td style="text-align: left;">Middle Atlantic</td>
+<td style="text-align: left;">Information</td>
+<td style="text-align: left;">&gt;=Very Good</td>
+<td style="text-align: left;">No</td>
+<td style="text-align: right;">5.301030</td>
+<td style="text-align: right;">200.54326</td>
+<td style="text-align: left;">High</td>
+<td style="text-align: right;">0.4742904</td>
+<td style="text-align: left;">High</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">448410</td>
+<td style="text-align: right;">2009</td>
+<td style="text-align: right;">75</td>
+<td style="text-align: left;">Married</td>
+<td style="text-align: left;">White</td>
+<td style="text-align: left;">College Grad</td>
+<td style="text-align: left;">Middle Atlantic</td>
+<td style="text-align: left;">Industrial</td>
+<td style="text-align: left;">&gt;=Very Good</td>
+<td style="text-align: left;">Yes</td>
+<td style="text-align: right;">4.447158</td>
+<td style="text-align: right;">85.38394</td>
+<td style="text-align: left;">Low</td>
+<td style="text-align: right;">0.1251232</td>
+<td style="text-align: left;">High</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+</section>
+<section id="confusion-matrix" class="level3">
+<h3 class="anchored" data-anchor-id="confusion-matrix">Confusion Matrix</h3>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>conf_matrix <span class="ot">&lt;-</span> <span class="fu">confusionMatrix</span>(test_data<span class="sc">$</span>pred_class, test_data<span class="sc">$</span>WageCategory, <span class="at">positive =</span> <span class="st">"Low"</span>)</span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>conf_matrix</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Confusion Matrix and Statistics
+
+          Reference
+Prediction High Low
+      High  310 116
+      Low   135 339
+                                          
+               Accuracy : 0.7211          
+                 95% CI : (0.6906, 0.7502)
+    No Information Rate : 0.5056          
+    P-Value [Acc &gt; NIR] : &lt;2e-16          
+                                          
+                  Kappa : 0.4419          
+                                          
+ Mcnemar's Test P-Value : 0.2559          
+                                          
+            Sensitivity : 0.7451          
+            Specificity : 0.6966          
+         Pos Pred Value : 0.7152          
+         Neg Pred Value : 0.7277          
+             Prevalence : 0.5056          
+         Detection Rate : 0.3767          
+   Detection Prevalence : 0.5267          
+      Balanced Accuracy : 0.7208          
+                                          
+       'Positive' Class : Low             
+                                          </code></pre>
+</div>
+</div>
+<ul>
+<li>Accuracy: 0.72
+<ul>
+<li>The model accurately predicted the correct wage category 72% of the time.</li>
+</ul></li>
+<li>Sensitivity: 0.75
+<ul>
+<li>The model accurately predicted low wage earners 75% of the time.</li>
+</ul></li>
+<li>Specificity: 0.70
+<ul>
+<li>The model accurately predicted high earners 70% of the time.</li>
+</ul></li>
+<li>Balanced Accuracy: 0.72
+<ul>
+<li>Our balanced accuracy shows us that our observed data is likely pretty balanced, since the balanced accuracy rate is the same as our regular accuracy rate. When we run table(Wage$WageCategory), we can see that our data is very balanced (~1500 per category).</li>
+</ul></li>
+</ul>
+</section>
+<section id="roc-curve" class="level3">
+<h3 class="anchored" data-anchor-id="roc-curve">ROC Curve</h3>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>roc_obj <span class="ot">&lt;-</span> <span class="fu">roc</span>(test_data<span class="sc">$</span>WageCategory, test_data<span class="sc">$</span>pred_prob, <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"Low"</span>, <span class="st">"High"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb40"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(roc_obj, <span class="at">col =</span> <span class="st">"darkblue"</span>, <span class="at">lwd =</span> <span class="dv">2</span>,</span>
+<span id="cb40-2"><a href="#cb40-2" aria-hidden="true" tabindex="-1"></a>     <span class="at">main =</span> <span class="st">"ROC Curve – Logistic Regression"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div id="fig-roc-obj" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-roc-obj-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="07-wage-analytics_files/figure-html/fig-roc-obj-1.png" class="img-fluid figure-img" width="672">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-roc-obj-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: A graph representing the model’s sensitivity and specificity in wage category predictions.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="area-under-the-curve" class="level3">
+<h3 class="anchored" data-anchor-id="area-under-the-curve">Area Under the Curve</h3>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="fu">auc</span>(roc_obj)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Area under the curve: 0.8088</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(test_data, <span class="fu">aes</span>(<span class="at">x =</span> WageCategory, <span class="at">y =</span> pred_prob, <span class="at">fill =</span> WageCategory)) <span class="sc">+</span></span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_boxplot</span>(<span class="at">alpha =</span> <span class="fl">0.7</span>) <span class="sc">+</span></span>
+<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Predicted Probability of Wage Category"</span>,</span>
+<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Actual Wage Category"</span>, <span class="at">y =</span> <span class="st">"Predicted Probability"</span>) <span class="sc">+</span></span>
+<span id="cb43-5"><a href="#cb43-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>(<span class="at">base_size =</span> <span class="dv">13</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output-display">
+<div id="fig-prediction-probability" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-prediction-probability-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="07-wage-analytics_files/figure-html/fig-prediction-probability-1.png" class="img-fluid figure-img" width="672">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-prediction-probability-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;2: A box plot representing the probability that two randomly chosen people will have their wages correctly predicted.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>Our AUC is 0.81 - this tells us that our model has very strong discriminative power and can accurately separate between high wage and low wages.</p>
+<p>The model identifies high earners at a rate of 70%, and it identifies low earners at a rate of 75%. This model performs much better than the ‘No Information Rate’ performance, which is accurate about 51% of the time (0.72 &gt; 0.51). So, this model is definitely better at predicting outcomes than guessing.</p>
+<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Model Performance
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The key question is whether or not the model makes good predictions. With 72% accuracy and an AUC of 0.81, the model performs well on unseen data.</p>
+</div>
+</div>
+</section>
+</section>
+<section id="step-6-final-interpretation" class="level2">
+<h2 class="anchored" data-anchor-id="step-6-final-interpretation">Step 6 – Final Interpretation</h2>
+<p>Based on all of the performed analyses, multiple variables were found to have a meaningful relationship with wage category. Specifically, a t-test showed a highly significant difference in the mean age of high earners (45 years) versus low earners (40 years). The ANOVA showed that education level is a statistically significant predictor of wages, accounting for 23% of the variance. Further, a chi-squared test indicated a statistically significant but weak association between race and wage category, suggesting that other factors likely play a larger role in determining wage category. The logistic regression model was made to predict wage category (Low vs.&nbsp;High) and identified multiple significant predictors. The summary(train_model) output suggested that age, marital status, education level, and health insurance status were the most impactful variables. Specifically, being older, having a college or advanced degree, being married, and having health insurance were all associated with a lower likelihood of earning a low wage. The strongest predictors of a high wage were having a college or advanced degree and having health insurance, as shown by the variable importance analysis. Evaluating the model’s performance had strong results. The model had an overall accuracy of 72% and a balanced accuracy of 72%, indicating it is effective at predicting wage category for both high and low earners. This model performs significantly better than the “No Information Rate,” which was approximately 51%. The model’s discriminative power was represented by a very high AUC (Area Under the Curve) of 0.81, which suggests the model can accurately distinguish between high and low wage earners 81% of the time. The Confusion Matrix also showed that the model performed slightly better at predicting low wage earners (sensitivity of 75%) than high wage earners (specificity of 70%). If this analysis were to be repeated, I would consider adding several new variables to potentially improve the model’s predictive power. Relevant additions could include a variable of specific job types or titles (instead of a broad jobclass), and location data, as different regions may result in different wages. Given the weak relationship found in the chi-squared test and the low variable importance, I would remove race from the model to make it more parsimonious. Ideally, these additions and removals would help to capture more of the complex factors that influence wage outcomes.</p>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
