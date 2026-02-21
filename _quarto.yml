@@ -20,8 +20,6 @@ book:
 bibliography: references.bib
 
 format:
-  html: {}
-  pdf:
-    documentclass: scrreprt
+  html: default
 
 editor: visual
